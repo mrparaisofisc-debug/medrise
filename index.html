@@ -469,7 +469,8 @@ async function sbInit(){try{if(!window.supabase)await loadJS("https://cdn.jsdeli
   sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
   const {data}=await sb.auth.getSession();sbUser=data&&data.session?data.session.user:null;
   if(sbUser)await pullState();
-  sb.auth.onAuthStateChange((ev,ses)=>{sbUser=ses?ses.user:null;});
+  if(sbUser&&!S.user){try{const p=JSON.parse(localStorage.getItem("medrise_ob")||"null");if(p){S.user=p;save();await pushState();localStorage.removeItem("medrise_ob");location.hash="#inicio";}}catch(e){}}
+  sb.auth.onAuthStateChange((ev,ses)=>{sbUser=ses?ses.user:null;if(ev==="PASSWORD_RECOVERY"){auth.recovery=true;location.hash="#nova-senha";render();}});
 }catch(e){sb=null;}sbReady=true;render();}
 async function pullState(){if(!sb||!sbUser)return;pulling=true;try{const {data}=await sb.from("user_state").select("state").eq("user_id",sbUser.id).maybeSingle();
   if(data&&data.state&&data.state.user){S=Object.assign(blank(),data.state);try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
@@ -493,7 +494,8 @@ function tutorBox(q){if(!qview.tutor)return '<button class="btn ghost" style="ma
    (sbUser?'<div class="row" style="gap:8px;margin-top:10px;flex-wrap:nowrap"><input id="tutor-in" type="text" placeholder="Pergunte qualquer dúvida sobre esta questão…" style="flex:1;min-width:0;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit" '+(chat.loading?"disabled":"")+'><button class="btn" data-act="tutor-send" '+(chat.loading?"disabled":"")+'>Perguntar</button></div>'+(chat.hist.length?'':'<button class="btn ghost sm" style="margin-top:8px" data-act="tutor-auto">Explica essa questão pra mim</button>'):'<p class="sub" style="margin:10px 0 0;font-size:13px"><a href="#entrar">Entre na sua conta</a> pra tirar dúvidas com o tutor de IA.</p>')+'</div>';}
 let rk={data:null,loading:false,err:""};
 async function loadRanking(){if(!sb||!sbUser||rk.loading)return;rk.loading=true;try{const {data,error}=await sb.rpc("ranking",{p_sid:null,p_lim:50});if(error)throw error;rk.data=data||[];}catch(e){rk.err="Não foi possível carregar o ranking.";}rk.loading=false;if(route()[0]==="ranking")render();}
-let auth={modo:"entrar",msg:"",busy:false};
+let auth={modo:"entrar",msg:"",busy:false,recovery:false};
+function vNovaSenha(){return '<div class="ob"><div style="margin-bottom:26px">'+LOGO_FULL(46)+'</div><div class="card" style="padding:28px;max-width:440px;margin:0 auto"><h1>Crie sua nova senha</h1>'+(sbUser?'<label class="f" style="margin-top:16px">Nova senha (mín. 6 caracteres)<input type="password" id="ns-pass" autocomplete="new-password"></label>'+(auth.msg?'<p style="margin:12px 0 0;font-size:14px;color:'+(/pronto/i.test(auth.msg)?"var(--ok)":"var(--bad)")+'">'+esc(auth.msg)+'</p>':'')+'<button class="btn" style="width:100%;margin-top:18px" data-act="ns-save" '+(auth.busy?"disabled":"")+'>Salvar nova senha</button>':'<p class="sub">Abra esta página pelo link que enviamos ao seu e-mail.</p><a class="btn ghost" href="#entrar">Voltar pro login</a>')+'</div></div>';}
 function vEntrar(){return '<div class="ob"><div style="margin-bottom:26px">'+LOGO_FULL(46)+'</div><div class="card" style="padding:28px;max-width:440px;margin:0 auto">'+
   '<h1>'+(auth.modo==="entrar"?"Entrar na sua conta":"Recuperar senha")+'</h1><p class="sub">'+(auth.modo==="entrar"?"Seu progresso fica salvo e acompanha você no celular e no computador.":"Digite seu e-mail e enviamos um link pra criar uma senha nova.")+'</p>'+
   '<label class="f" style="margin-top:16px">E-mail<input type="email" id="au-email" autocomplete="email" placeholder="voce@email.com"></label>'+
@@ -582,7 +584,7 @@ function stMaterias(){
   (tot?'<div class="chart" style="max-width:620px"><p class="sub" style="margin:0 0 4px;font-size:13px">Tempo por grande área ('+(big?"horas":"minutos")+')</p>'+barChart(areas,{unit:un,label:"Tempo por grande área",h:220})+'</div>':'<div class="empty">Estude pelo banco de questões ou pelos simulados pra ver suas horas por matéria.</div>')+
   (rows.length?'<div style="overflow-x:auto;margin-top:14px"><table class="tt"><thead><tr><th>Tema</th><th>Área</th><th style="width:30%">Tempo de estudo</th><th>Acerto</th><th></th></tr></thead><tbody>'+
    rows.slice(0,15).map(r=>'<tr><td><b>'+esc(r.t)+'</b></td><td class="sub" style="font-size:13px">'+esc(r.a||"")+'</td><td><div class="row" style="gap:8px;align-items:center;flex-wrap:nowrap"><div class="tbar" style="flex:1"><i style="width:'+Math.max(2,Math.round(r.s/maxS*100))+'%;background:'+(AREA_COLOR[r.a]||"#0FA3A3")+'"></i></div><span style="font-size:13px;white-space:nowrap">'+hm(r.s)+'</span></div></td><td>'+(r.pct==null?'—':r.pct+'% <span class="sub" style="font-size:12px">('+r.n+')</span>')+'</td><td>'+tag(r)+'</td></tr>').join("")+'</tbody></table></div>':'')+'</div>';}
-let ob={step:0,nome:"",tipo:"R1",esp:"",bancas:[],data:"",horas:20,fase:"Internato"};
+let ob={ok:"",step:0,nome:"",tipo:"R1",esp:"",bancas:[],data:"",horas:20,fase:"Internato"};
 let qf={area:"",tema:"",status:"",banca:"",ano:"",dif:"",idx:0};
 let qview={txt:"",sel:null,show:false,tutor:false,cut:{}};
 let run=null; // simulado em andamento
@@ -1029,6 +1031,8 @@ let tick=null;
 function render(){
   const root=$("#root");hideBar();
   const [r,p]=route();
+  if(r==="nova-senha"){root.innerHTML=vNovaSenha();return;}
+  if(ob.ok&&!S.user&&r==="cadastro"){root.innerHTML='<div class="ob"><div style="margin-bottom:26px">'+LOGO_FULL(46)+'</div><div class="card" style="padding:28px;max-width:480px;margin:0 auto;text-align:center"><h1>Confira seu e-mail</h1><p class="sub">Mandamos um link de confirmação pra <b>'+esc(ob.ok)+'</b>. Clique nele pra ativar sua conta e cair direto no seu plano de estudos.</p><p class="sub" style="font-size:13px">Não chegou? Olhe a caixa de spam ou promoções. O remetente é contato@medrisebr.com.</p></div></div>';return;}
   if(r==="entrar"&&!S.user){root.innerHTML=vEntrar();return;}
   if(r==="home"||(!S.user&&r!=="cadastro")){root.innerHTML=vLanding();return;}
   if(!S.user){root.innerHTML=vOnboard();return;}
@@ -1088,7 +1092,7 @@ document.addEventListener("click",e=>{
     t.disabled=true;t.textContent="Criando sua conta…";
     sb.auth.signUp({email:em,password:pw,options:{data:{nome:ob.nome.trim()}}}).then(async({data,error})=>{
       if(error){ob.err=/registered|already/i.test(error.message)?"Esse e-mail já tem conta. Clique em Entrar.":"Não foi possível criar a conta: "+error.message;render();return;}
-      sbUser=data.user;if(!data.session){ob.err="Conta criada! Confirme pelo link enviado ao seu e-mail e depois entre.";render();return;}
+      sbUser=data.user;if(!data.session){try{localStorage.setItem("medrise_ob",JSON.stringify({nome:ob.nome.trim(),tipo:ob.tipo,esp:ob.esp,bancas:ob.bancas,data:ob.data,horas:+ob.horas||20,fase:ob.fase}));}catch(e){}ob.err="";ob.ok=em;render();return;}
       S.user={nome:ob.nome.trim(),tipo:ob.tipo,esp:ob.esp,bancas:ob.bancas,data:ob.data,horas:+ob.horas||20,fase:ob.fase};save();await pushState();location.hash="#inicio";render();});return;}
   if(a==="ob-next"){if(ob.step<3){ob.step++;}else{S.user={nome:ob.nome.trim(),tipo:ob.tipo,esp:ob.esp,bancas:ob.bancas,data:ob.data,horas:+ob.horas||20,fase:ob.fase};save();location.hash="#inicio";}}
   if(a.startsWith("ob-")){render();return;}
@@ -1106,6 +1110,8 @@ document.addEventListener("click",e=>{
   if(a==="tutor-auto"){const q=curQ();if(q)tutorAsk(q,"Não entendi essa questão, me explica de outro jeito.");return;}
   if(a==="tutor-send"){const q=curQ();const inp=$("#tutor-in");const m=inp?inp.value.trim():"";if(q&&m)tutorAsk(q,m);return;}
   if(a==="ai-grade"){const q=curQ();if(!q)return;qview.aiBusy=true;render();aiCall({modo:"corrigir",q:qPayload(q),resposta:qview.txt}).then(j=>{qview.ai=j;if(j.nota!=null){S.ans[q.id]={ok:j.nota>=7,ch:-1,ts:Date.now(),nota:j.nota,ia:1};save();}}).catch(e=>{qview.ai={erro:e.message==="login"?"Entre na sua conta pra usar a correção por IA.":e.message};}).finally(()=>{qview.aiBusy=false;render();});return;}
+  if(a==="ns-save"){const pw=($("#ns-pass")||{}).value||"";if(pw.length<6){auth.msg="A senha precisa ter pelo menos 6 caracteres.";render();return;}auth.busy=true;render();
+    sb.auth.updateUser({password:pw}).then(async({error})=>{auth.busy=false;if(error){auth.msg="Não foi possível trocar a senha: "+error.message;render();return;}auth.msg="Pronto! Senha trocada.";auth.recovery=false;await pullState();setTimeout(()=>{auth.msg="";location.hash=S.user?"#inicio":"#cadastro";render();},1200);render();});return;}
   if(a==="au-modo"){auth.modo=v;auth.msg="";render();return;}
   if(a==="au-login"){const em=$("#au-email").value.trim(),pw=$("#au-pass").value;if(!em||!pw){auth.msg="Preencha e-mail e senha.";render();return;}auth.busy=true;render();
     sb.auth.signInWithPassword({email:em,password:pw}).then(async({data,error})=>{auth.busy=false;if(error){auth.msg=/confirm/i.test(error.message)?"Confirme seu e-mail pelo link que enviamos.":"E-mail ou senha incorretos.";render();return;}
