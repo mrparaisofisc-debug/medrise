@@ -42,6 +42,8 @@ h1{font-size:26px} h2{font-size:19px} h3{font-size:16px}
 .stw button{margin-top:10px;width:100%;background:transparent;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:10px;padding:7px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
 .stw button:hover{background:rgba(255,255,255,.08)}
 .topbar .tb-clk{width:auto;height:auto;display:flex;align-items:center;gap:7px;font-family:Sora;font-weight:700;font-size:15px;color:#fff;background:rgba(255,255,255,.08);border:0;border-radius:99px;padding:6px 12px;cursor:pointer}
+.tt{width:100%;border-collapse:collapse;font-size:14px}.tt td,.tt th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}.tt th{font-size:12px;color:var(--ink2);font-weight:600}
+.tbar{height:10px;border-radius:99px;background:#E5EFEE;min-width:90px;overflow:hidden}.tbar i{display:block;height:100%;border-radius:99px}
 .st-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:12px 0 6px}.st-kpis div{background:#F3F9F8;border-radius:12px;padding:12px}.st-kpis b{font-family:Sora;font-size:20px;display:block}.st-kpis span{font-size:12px;color:var(--ink2)}
 @media(max-width:700px){.st-kpis{grid-template-columns:repeat(2,1fr)}}
 /* generic */
@@ -446,7 +448,7 @@ const AVISOS=[
 /* ================= STATE ================= */
 const KEY="medrise_v1";
 let S;
-function blank(){return {study:{},stPause:false,user:null,ans:{},saved:[],sims:[],hl:{},notes:[],cards:{},read:[],plan:{done:{}}};}
+function blank(){return {study:{},stA:{},stT:{},stPause:false,user:null,ans:{},saved:[],sims:[],hl:{},notes:[],cards:{},read:[],plan:{done:{}}};}
 function load(){try{const r=localStorage.getItem(KEY);S=r?Object.assign(blank(),JSON.parse(r)):blank();}catch(e){S=blank();}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 load();
@@ -467,7 +469,14 @@ function stPaint(){const st=stState(),t=hms(stToday());
   document.querySelectorAll(".st-msg").forEach(e=>e.textContent=ST_MSG[st]);
   document.querySelectorAll(".st-btn").forEach(e=>e.textContent=S.stPause?"Retomar cronômetro":"Pausar cronômetro");}
 ["mousemove","keydown","click","scroll","touchstart"].forEach(ev=>document.addEventListener(ev,()=>{stLastAct=Date.now();},{passive:true}));
-setInterval(()=>{if(stState()==="on"){const k=dayKey();S.study=S.study||{};S.study[k]=(S.study[k]||0)+1;if(++stN%15===0)save();}stPaint();},1000);
+const ST_OTHER="Dossiês e revisão";
+function stCtx(){try{const r=(location.hash||"#inicio").slice(1).split("/")[0];
+  if(r==="questoes"){return filteredQ()[qf.idx]||null;}
+  if(r==="sim"&&run){return qById(run.qs[run.i])||null;}
+  if(r==="flashcards"){const d=dueCards();return d[flash.i]||null;}
+}catch(e){}return null;}
+setInterval(()=>{if(stState()==="on"){const k=dayKey();S.study=S.study||{};S.study[k]=(S.study[k]||0)+1;
+  S.stA=S.stA||{};S.stT=S.stT||{};const q=stCtx();if(q){S.stA[q.area]=(S.stA[q.area]||0)+1;const o=S.stT[q.tema]||(S.stT[q.tema]={a:q.area,s:0});o.s++;}else S.stA[ST_OTHER]=(S.stA[ST_OTHER]||0)+1;if(++stN%15===0)save();}stPaint();},1000);
 window.addEventListener("pagehide",save);document.addEventListener("visibilitychange",()=>{if(document.hidden)save();});
 const stWidget=()=>'<div class="stw" aria-label="Cronômetro de estudo"><div class="lbl">Estudo hoje</div><div class="clk st-clk">'+hms(stToday())+'</div><div class="st"><span class="st-dot"></span><span class="st-msg">'+ST_MSG[stState()]+'</span></div><button class="st-btn" data-act="st-toggle">'+(S.stPause?"Retomar cronômetro":"Pausar cronômetro")+'</button></div>';
 function stCard(){const u=S.user||{};const meta=(u.horas||20)*3600;const wk=stWeek();const pct=Math.min(100,Math.round(wk/meta*100));
@@ -476,6 +485,23 @@ function stCard(){const u=S.user||{};const meta=(u.horas||20)*3600;const wk=stWe
   '<div class="st-kpis"><div><b class="st-clk">'+hms(stToday())+'</b><span>Hoje</span></div><div><b>'+hm(wk)+'</b><span>Últimos 7 dias</span></div><div><b>'+hm(stTotal())+'</b><span>Total estudado</span></div><div><b>'+pct+'%</b><span>Meta da semana ('+(u.horas||20)+'h)</span></div></div>'+
   '<div class="bar-h" style="margin:6px 0 4px"><i style="width:'+pct+'%"></i></div>'+
   '<div class="chart" style="max-width:620px;margin-top:10px"><p class="sub" style="margin:0 0 4px;font-size:13px">Minutos estudados por dia</p>'+barChart(days.map(x=>({label:dayKey(x.d),short:nm[x.d.getDay()],value:Math.round(x.s/60),color:"#0FA3A3"})),{unit:"m",label:"Minutos estudados por dia",h:220})+'</div></div>';}
+function stMaterias(){
+  const s=stats();const A=S.stA||{},T=S.stT||{};const tot=Object.values(A).reduce((a,x)=>a+x,0);
+  const big=Math.max(0,...Object.values(A))>=18000;const val=x=>big?Math.round(x/360)/10:Math.round(x/60);const un=big?"h":"m";
+  const areas=AREAS.concat([ST_OTHER]).map(a=>({label:a,short:a===ST_OTHER?"Dossiês":a.split(" ")[0].replace("Ginecologia","GO").replace("Medicina","Preventiva"),value:val(A[a]||0),color:AREA_COLOR[a]||"#9DB3B0"}));
+  const temas={};Object.entries(T).forEach(([t,o])=>{temas[t]={a:o.a,s:o.s,t:0,o:0};});
+  Object.entries(s.byTema).forEach(([t,v])=>{temas[t]=temas[t]||{a:v.area,s:0,t:0,o:0};temas[t].t=v.t;temas[t].o=v.o;});
+  const rows=Object.entries(temas).map(([t,v])=>({t,a:v.a,s:v.s,n:v.t,pct:v.t?Math.round(v.o/v.t*100):null}));
+  const weak=r=>r.pct!=null&&r.pct<60;
+  rows.sort((x,y)=>(weak(y)-weak(x))||(weak(x)?x.s-y.s:y.s-x.s));
+  const maxS=Math.max(60,...rows.map(r=>r.s));
+  const alerta=rows.filter(r=>weak(r)&&r.s<1800).slice(0,3);
+  const tag=r=>weak(r)?(r.s<1800?'<span class="tag bad">Precisa de mais horas</span>':'<span class="tag warn">Fraco, continue</span>'):(r.pct==null?'<span class="tag gray">Sem questões</span>':'<span class="tag ok">Bom</span>');
+  return '<div class="card" style="margin-bottom:16px"><h2>Horas por matéria e por tema</h2><p class="sub" style="margin:4px 0 10px">Onde seu tempo está indo, comparado com o seu acerto nas questões e simulados. O tempo entra no tema da questão que está aberta na tela.</p>'+
+  (alerta.length?'<div style="background:var(--bad-bg);color:var(--bad);border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:14px"><b>Atenção:</b> você está errando muito em '+alerta.map(r=>'<b>'+esc(r.t)+'</b> ('+r.pct+'% de acerto, '+hm(r.s)+' de estudo)').join(", ")+'. Vale reservar mais horas pra esses temas.</div>':'')+
+  (tot?'<div class="chart" style="max-width:620px"><p class="sub" style="margin:0 0 4px;font-size:13px">Tempo por grande área ('+(big?"horas":"minutos")+')</p>'+barChart(areas,{unit:un,label:"Tempo por grande área",h:220})+'</div>':'<div class="empty">Estude pelo banco de questões ou pelos simulados pra ver suas horas por matéria.</div>')+
+  (rows.length?'<div style="overflow-x:auto;margin-top:14px"><table class="tt"><thead><tr><th>Tema</th><th>Área</th><th style="width:30%">Tempo de estudo</th><th>Acerto</th><th></th></tr></thead><tbody>'+
+   rows.slice(0,15).map(r=>'<tr><td><b>'+esc(r.t)+'</b></td><td class="sub" style="font-size:13px">'+esc(r.a||"")+'</td><td><div class="row" style="gap:8px;align-items:center;flex-wrap:nowrap"><div class="tbar" style="flex:1"><i style="width:'+Math.max(2,Math.round(r.s/maxS*100))+'%;background:'+(AREA_COLOR[r.a]||"#0FA3A3")+'"></i></div><span style="font-size:13px;white-space:nowrap">'+hm(r.s)+'</span></div></td><td>'+(r.pct==null?'—':r.pct+'% <span class="sub" style="font-size:12px">('+r.n+')</span>')+'</td><td>'+tag(r)+'</td></tr>').join("")+'</tbody></table></div>':'')+'</div>';}
 let ob={step:0,nome:"",tipo:"R1",esp:"",bancas:[],data:"",horas:20,fase:"Internato"};
 let qf={area:"",tema:"",status:"",banca:"",idx:0};
 let qview={txt:"",sel:null,show:false,tutor:false,cut:{}};
@@ -729,7 +755,7 @@ function vCronograma(){
 function vDesempenho(){
   const s=stats();const areaItems=AREAS.map(a=>({label:a,short:a.split(" ")[0].replace("Ginecologia","GO").replace("Medicina","Preventiva"),value:s.by[a].t?Math.round(s.by[a].o/s.by[a].t*100):0,color:AREA_COLOR[a]}));
   const temas=Object.entries(s.byTema).sort((a,b)=>a[1].o/a[1].t-b[1].o/b[1].t);
-  return '<div class="head"><div><h1>Desempenho</h1><p class="sub">Seu aproveitamento por área, por tema e nos simulados.</p></div></div>'+stCard()+
+  return '<div class="head"><div><h1>Desempenho</h1><p class="sub">Seu aproveitamento por área, por tema e nos simulados.</p></div></div>'+stCard()+stMaterias()+
   (s.tot?'<div class="grid g2" style="margin-bottom:16px"><div class="card chart"><h2>Acerto por área</h2>'+barChart(areaItems,{max:100,unit:"%",label:"Acerto por área"})+'</div><div class="card chart"><h2>Questões feitas por área</h2>'+barChart(AREAS.map(a=>({label:a,short:a.split(" ")[0].replace("Ginecologia","GO").replace("Medicina","Preventiva"),value:s.by[a].t,color:AREA_COLOR[a]})),{label:"Questões por área"})+'</div></div>'+
   '<div class="card"><h2>Por tema</h2><div class="tbl-wrap"><table class="t" style="margin-top:8px"><thead><tr><th>Tema</th><th>Área</th><th>Feitas</th><th style="width:40%">Acerto</th></tr></thead><tbody>'+temas.map(([t,v])=>{const p=Math.round(v.o/v.t*100);return '<tr><td><b>'+esc(t)+'</b></td><td class="sub">'+esc(v.area)+'</td><td>'+v.t+'</td><td><div class="row" style="align-items:center;gap:10px;flex-wrap:nowrap"><div class="bar-h" style="flex:1"><i style="width:'+p+'%;background:'+(p<60?"var(--bad)":"var(--teal)")+'"></i></div><b>'+p+'%</b></div></td></tr>';}).join("")+'</tbody></table></div></div>':'<div class="empty">Resolva questões ou faça um simulado pra ver seu desempenho. <br><a href="#questoes">Ir para o banco de questões</a></div>');
 }
