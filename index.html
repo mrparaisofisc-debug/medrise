@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MedRise — Preparatório Residência</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#06343F">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="MedRise">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -42,6 +47,10 @@ h1{font-size:26px} h2{font-size:19px} h3{font-size:16px}
 .stw button{margin-top:10px;width:100%;background:transparent;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:10px;padding:7px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
 .stw button:hover{background:rgba(255,255,255,.08)}
 .topbar .tb-clk{width:auto;height:auto;display:flex;align-items:center;gap:7px;font-family:Sora;font-weight:700;font-size:15px;color:#fff;background:rgba(255,255,255,.08);border:0;border-radius:99px;padding:6px 12px;cursor:pointer}
+.vesp-it{border-left:4px solid var(--teal);padding:10px 14px;margin:10px 0;background:#F6FBFA;border-radius:0 12px 12px 0}
+.vesp-it b{display:block;margin-bottom:2px}.seg{display:inline-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden}.seg button{border:0;background:#fff;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer}.seg button.on{background:var(--ink);color:#fff}
+.grade{display:flex;gap:14px;align-items:center;border-radius:14px;padding:14px;margin:8px 0 10px;background:#F3F9F8}.grade .n{font-family:Sora;font-weight:800;font-size:30px;min-width:64px;text-align:center}
+.chance{font-family:Sora;font-weight:800;font-size:26px}
 .tt{width:100%;border-collapse:collapse;font-size:14px}.tt td,.tt th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}.tt th{font-size:12px;color:var(--ink2);font-weight:600}
 .tbar{height:10px;border-radius:99px;background:#E5EFEE;min-width:90px;overflow:hidden}.tbar i{display:block;height:100%;border-radius:99px}
 .st-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:12px 0 6px}.st-kpis div{background:#F3F9F8;border-radius:12px;padding:12px}.st-kpis b{font-family:Sora;font-size:20px;display:block}.st-kpis span{font-size:12px;color:var(--ink2)}
@@ -452,6 +461,8 @@ function blank(){return {study:{},stA:{},stT:{},stPause:false,user:null,ans:{},s
 function load(){try{const r=localStorage.getItem(KEY);S=r?Object.assign(blank(),JSON.parse(r)):blank();}catch(e){S=blank();}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 load();
+try{if("serviceWorker" in navigator&&location.protocol==="https:"&&!/claude\.ai|claudeusercontent|anthropic/.test(location.host)){navigator.serviceWorker.register("sw.js").catch(()=>{});navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.type==="offline-done")toast("Pronto: questões e imagens disponíveis offline");});}}catch(e){}
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();window._bip=e;});
 const STUDY_R=["questoes","simulados","sim","dossie","erros","flashcards","salvos"];
 let stLastAct=Date.now(),stN=0;
 const dayKey=(d)=>{d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
@@ -485,6 +496,33 @@ function stCard(){const u=S.user||{};const meta=(u.horas||20)*3600;const wk=stWe
   '<div class="st-kpis"><div><b class="st-clk">'+hms(stToday())+'</b><span>Hoje</span></div><div><b>'+hm(wk)+'</b><span>Últimos 7 dias</span></div><div><b>'+hm(stTotal())+'</b><span>Total estudado</span></div><div><b>'+pct+'%</b><span>Meta da semana ('+(u.horas||20)+'h)</span></div></div>'+
   '<div class="bar-h" style="margin:6px 0 4px"><i style="width:'+pct+'%"></i></div>'+
   '<div class="chart" style="max-width:620px;margin-top:10px"><p class="sub" style="margin:0 0 4px;font-size:13px">Minutos estudados por dia</p>'+barChart(days.map(x=>({label:dayKey(x.d),short:nm[x.d.getDay()],value:Math.round(x.s/60),color:"#0FA3A3"})),{unit:"m",label:"Minutos estudados por dia",h:220})+'</div></div>';}
+function chanceApr(b){const bq=bancaQ(b);const L=Object.entries(S.ans).map(([id,r])=>[qById(id),r]).filter(([q])=>q&&q.banca===bq);
+  const s=stats();const n=L.length;const acc=n?L.filter(([,r])=>r.ok).length/n:(s.tot?s.ok/s.tot:null);const nc=NC[b]||NC[bq]||null;const corte=nc?nc.corte:65;
+  if(acc==null)return {b,n,acc:null,corte,p:null,nc};
+  const conf=Math.min(1,(n||s.tot)/40);const z=(acc*100-corte)/7;const p0=1/(1+Math.exp(-z));const p=Math.round((0.5+(p0-0.5)*(0.4+0.6*conf))*100);
+  return {b,n,acc:Math.round(acc*100),corte,p:Math.max(1,Math.min(99,p)),nc};}
+function vChance(){const u=S.user||{};const bs=(u.bancas&&u.bancas.length?u.bancas:["ENARE"]);const s=stats();
+  const all=[...new Set(Q.map(q=>q.banca))].map(b=>{const L=Object.entries(S.ans).map(([id,r])=>[qById(id),r]).filter(([q])=>q&&q.banca===b);return {b,n:L.length,pct:L.length?Math.round(L.filter(([,r])=>r.ok).length/L.length*100):0};}).filter(x=>x.n);
+  return '<div class="card" style="margin-bottom:16px"><h2>Chance de aprovação</h2><p class="sub" style="margin:4px 0 12px">Compara o seu acerto nas questões de cada banca com a nota de corte de referência. Quanto mais questões você faz, mais confiável fica a previsão.</p>'+
+  '<div class="grid g3">'+bs.map(b=>{const c=chanceApr(b);const col=c.p==null?"var(--ink2)":c.p>=60?"var(--ok)":c.p>=35?"var(--warn)":"var(--bad)";
+    return '<div class="card pad-s" style="background:#F6FBFA;box-shadow:none"><div class="row" style="justify-content:space-between;align-items:center"><b>'+esc(b)+'</b>'+(c.n<15?'<span class="tag gray">'+(c.n?c.n+' questões':'sem questões')+'</span>':'')+'</div><div class="chance" style="color:'+col+';margin-top:6px">'+(c.p==null?'—':c.p+'%')+'</div><p class="sub" style="margin:2px 0 0;font-size:13px">'+(c.acc==null?'Resolva questões desta banca pra calcular.':'Seu acerto: <b>'+c.acc+'%</b>'+(c.n?'':' (geral)')+' · nota de corte: <b>'+c.corte+'%</b>'+(c.nc?' <span title="'+esc(c.nc.fonte||"")+'">('+esc(c.nc.ref||"")+')</span>':' (referência média)'))+'</p>'+(c.acc!=null?'<div class="bar-h" style="margin-top:8px;position:relative"><i style="width:'+c.acc+'%;background:'+col+'"></i><span style="position:absolute;top:-3px;left:'+c.corte+'%;width:2px;height:16px;background:var(--ink)"></span></div>':'')+'<a class="btn ghost sm" style="margin-top:10px" href="#questoes" data-act="qf-banca" data-v="'+esc(bancaQ(b))+'">Treinar esta banca</a></div>';}).join("")+'</div>'+
+  '<p class="sub" style="font-size:12px;margin:10px 0 0">Estimativa estatística a partir das suas respostas, não é garantia de resultado.</p></div>'+
+  (all.length?'<div class="card" style="margin-bottom:16px"><h2>Acerto por banca</h2>'+'<div class="chart" style="max-width:720px">'+barChart(all.map(x=>({label:x.b,short:x.b.replace("ENAMED/ENARE","ENARE"),value:x.pct,color:"#0FA3A3"})),{max:100,unit:"%",label:"Acerto por banca"})+'</div></div>':'');}
+let vesp={b:"",m:15};
+let _GF=null;const globalFreq=()=>_GF||(_GF=temaFreq(null));
+function vespItems(b,m){const F=temaFreq([bancaQ(b)]);const G=globalFreq();const top=Object.entries(F).map(([t,v])=>[t,Object.assign({},v,{g:(G[t]?G[t].n:v.n)})]).sort((x,y)=>(y[1].n*3+y[1].g)-(x[1].n*3+x[1].g));const n=m===15?10:30;
+  return top.slice(0,n).map(([t,v])=>{const q=v.qs.find(x=>!x.anul)||v.qs[0];const extra=m===60?(q.tab||[]).slice(1,3).map(r=>r.join(": ")).join(" · "):"";return {t,area:v.area,n:v.n,g:v.g,tut:q.tut,extra,com:m===60?(q.com||"").split(/(?<=\.)\s/)[0]:""};});}
+function vVespera(){const u=S.user||{};const opts=[...new Set((u.bancas||[]).concat(["ENARE","USP-SP","UNIFESP","UERJ","SUS-SP","SCMSP","PSU-MG","UNICAMP","SUS-BA","AMRIGS","SES-DF"]))].filter(b=>Q.some(q=>q.banca===bancaQ(b)));
+  if(!vesp.b||!opts.includes(vesp.b))vesp.b=opts[0];const it=vespItems(vesp.b,vesp.m);
+  return '<div class="head"><div><h1>Modo Véspera</h1><p class="sub">Só o que mais cai na banca, no formato pra revisar na última hora. Dá pra ouvir em áudio no trânsito ou no plantão.</p></div><button class="btn" data-act="speak" data-src="vesp">'+ic("play").replace('<svg','<svg width="18" height="18"')+' Ouvir em áudio</button></div>'+
+  '<div class="card pad-s" style="margin-bottom:16px;display:flex;gap:14px;flex-wrap:wrap;align-items:end"><label class="f" style="min-width:200px">Banca<select data-vesp="b">'+opts.map(b=>'<option '+(vesp.b===b?"selected":"")+'>'+esc(b)+'</option>').join("")+'</select></label><div><div class="f" style="font-size:13px;font-weight:600;color:var(--ink2);margin-bottom:6px">Tempo</div><div class="seg"><button class="'+(vesp.m===15?"on":"")+'" data-act="vesp-m" data-v="15">15 minutos</button><button class="'+(vesp.m===60?"on":"")+'" data-act="vesp-m" data-v="60">1 hora</button></div></div></div>'+
+  '<div class="card" id="vesp-txt"><h2>'+esc(vesp.b)+': '+(vesp.m===15?'os 10 temas que mais caem':'os 30 temas que mais caem, com detalhes')+'</h2>'+it.map((x,i)=>'<div class="vesp-it" style="border-color:'+(AREA_COLOR[x.area]||"#0FA3A3")+'"><b>'+(i+1)+'. '+esc(x.t)+' <span class="tag gray" style="font-size:11px">'+esc(x.area)+' · '+(x.n>1?'caiu '+x.n+'x nesta banca · ':'')+x.g+'x em todas as provas</span></b><span>'+esc(x.tut)+'</span>'+(x.com?'<p class="sub" style="margin:6px 0 0;font-size:14px">'+esc(x.com)+'</p>':'')+(x.extra?'<p class="sub" style="margin:4px 0 0;font-size:13px">'+esc(x.extra)+'</p>':'')+'</div>').join("")+
+  '<p class="sub" style="margin-top:14px">Depois de ler, faça o <a href="#simulados">simulado adaptativo</a> pra fixar.</p></div>';}
+let spk=null;
+function speakText(txt){try{if(!("speechSynthesis" in window)){toast("Seu navegador não tem leitura em voz");return;}
+  if(speechSynthesis.speaking){speechSynthesis.cancel();spk=null;document.querySelectorAll('[data-act="speak"]').forEach(b=>b.classList.remove("on"));return;}
+  const parts=txt.replace(/\s+/g," ").match(/[^.!?]{1,220}[.!?]?/g)||[];const vs=speechSynthesis.getVoices();const voice=vs.find(v=>/pt[-_]BR/i.test(v.lang))||vs.find(v=>/^pt/i.test(v.lang));
+  parts.forEach(p=>{const u=new SpeechSynthesisUtterance(p);u.lang="pt-BR";if(voice)u.voice=voice;u.rate=1.05;speechSynthesis.speak(u);});spk=1;toast("Tocando o áudio. Toque de novo pra parar.");}catch(e){toast("Não foi possível tocar o áudio");}}
 function stMaterias(){
   const s=stats();const A=S.stA||{},T=S.stT||{};const tot=Object.values(A).reduce((a,x)=>a+x,0);
   const big=Math.max(0,...Object.values(A))>=18000;const val=x=>big?Math.round(x/360)/10:Math.round(x/60);const un=big?"h":"m";
@@ -503,7 +541,7 @@ function stMaterias(){
   (rows.length?'<div style="overflow-x:auto;margin-top:14px"><table class="tt"><thead><tr><th>Tema</th><th>Área</th><th style="width:30%">Tempo de estudo</th><th>Acerto</th><th></th></tr></thead><tbody>'+
    rows.slice(0,15).map(r=>'<tr><td><b>'+esc(r.t)+'</b></td><td class="sub" style="font-size:13px">'+esc(r.a||"")+'</td><td><div class="row" style="gap:8px;align-items:center;flex-wrap:nowrap"><div class="tbar" style="flex:1"><i style="width:'+Math.max(2,Math.round(r.s/maxS*100))+'%;background:'+(AREA_COLOR[r.a]||"#0FA3A3")+'"></i></div><span style="font-size:13px;white-space:nowrap">'+hm(r.s)+'</span></div></td><td>'+(r.pct==null?'—':r.pct+'% <span class="sub" style="font-size:12px">('+r.n+')</span>')+'</td><td>'+tag(r)+'</td></tr>').join("")+'</tbody></table></div>':'')+'</div>';}
 let ob={step:0,nome:"",tipo:"R1",esp:"",bancas:[],data:"",horas:20,fase:"Internato"};
-let qf={area:"",tema:"",status:"",banca:"",idx:0};
+let qf={area:"",tema:"",status:"",banca:"",ano:"",dif:"",idx:0};
 let qview={txt:"",sel:null,show:false,tutor:false,cut:{}};
 let run=null; // simulado em andamento
 let flash={i:0,flip:false};
@@ -514,6 +552,28 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"
 const L="ABCDE";
 function toast(m){const t=$("#toast");t.textContent=m;t.style.display="block";clearTimeout(toast._t);toast._t=setTimeout(()=>t.style.display="none",2200);}
 function qById(id){return Q.find(q=>q.id===id);}
+/* ---- dificuldade estimada (até termos o % de acerto real dos alunos) ---- */
+const DIFF=(()=>{const sc=q=>{const w=(q.e||"").split(/\s+/).length;const aw=q.a&&q.a.length?q.a.join(" ").split(/\s+/).length/q.a.length:0;return w+aw*1.5+(q.img?45:0)+(q.tipo==="aberta"?35:0)+(q.ok?25:0)+(/EXCETO|INCORRETA|NÃO|INADEQUAD/.test(q.e||"")?20:0);};
+  const v=Q.map(q=>[q.id,sc(q)]).sort((a,b)=>a[1]-b[1]);const m={};v.forEach(([id],i)=>{m[id]=i<v.length/3?"Fácil":(i<v.length*2/3?"Média":"Difícil");});return m;})();
+const ANOS=[...new Set(Q.map(q=>q.ano))].sort((a,b)=>b-a);
+function temaFreq(bancas){const L=Q.filter(q=>!bancas||!bancas.length||bancas.includes(q.banca)||(q.banca==="ISCMSP"&&bancas.includes("SCMSP"))||(q.banca==="ENAMED/ENARE"&&bancas.includes("ENARE")));const f={};(L.length?L:Q).forEach(q=>{const k=q.tema;f[k]=f[k]||{n:0,area:q.area,qs:[]};f[k].n++;f[k].qs.push(q);});return f;}
+const bancaQ=b=>b==="SCMSP"?"ISCMSP":(b==="ENARE"?"ENAMED/ENARE":b);
+/* nota de corte de referência (% de acertos) por banca: preenchida a partir dos resultados oficiais; null = sem dado */
+const NC={"ENARE":{corte:83,ref:"Clínica Médica 2026: cerca de 830/1000 em vários hospitais",fonte:"Estratégia MED"},"USP-SP":{corte:83,ref:"Clínica Médica 2026, 1ª fase",fonte:"Estratégia MED / Fuvest"},"SUS-SP":{corte:61,ref:"Clínica Médica 2026, ampla concorrência",fonte:"usebip / Vunesp"},"SCMSP":{corte:78.7,ref:"Clínica Médica 2026, aprovação 1ª chamada",fonte:"usebip"},"UNICAMP":{corte:73.2,ref:"Clínica Médica 2026: 7,32 de 10",fonte:"usebip"}};
+/* raio-x da concorrência, ciclo 2026 (fontes públicas: Estratégia MED, Medway, MedCof, usebip) */
+const CONC={
+ "ENARE":{vagas:"6.894",cand:"87.040",cv:"12,6",corte:"≈830/1000 (Clínica Médica, varia por hospital)"},
+ "USP-SP":{vagas:"834",cand:"11.082",cv:"13,3",corte:"83 (Clínica Médica, 1ª fase)"},
+ "SUS-SP":{vagas:"—",cand:"26.441",cv:"—",corte:"61,00 (Clínica Médica)"},
+ "SCMSP":{vagas:"250+",cand:"—",cv:"—",corte:"78,70 (Clínica Médica)"},
+ "UNICAMP":{vagas:"—",cand:"—",cv:"—",corte:"7,32 de 10 (Clínica Médica)"},
+ "UERJ":{vagas:"221",cand:"4.652",cv:"21,0",corte:"—"},
+ "PSU-MG":{vagas:"≈1.200",cand:"32.000+",cv:"≈27",corte:"varia por hospital"},
+ "SES-DF":{vagas:"574",cand:"6.570",cv:"11,4",corte:"≈100 (Clínica Médica, escala própria)"},
+ "SUS-BA":{vagas:"≈450",cand:"4.000+",cv:"≈9",corte:"—"},
+ "AMRIGS":{vagas:"1.900+",cand:"—",cv:"—",corte:"varia por hospital (ex.: 59 na FSNH, Clínica Médica)"},
+ "UNIFESP":{vagas:"—",cand:"—",cv:"—",corte:"—"},
+ "UFRJ":{vagas:"via ENARE",cand:"—",cv:"—",corte:"ver ENARE"}};
 function stats(filterArea){
   let tot=0,ok=0;const by={};AREAS.forEach(a=>by[a]={t:0,o:0});const byTema={};
   Object.entries(S.ans).forEach(([id,r])=>{const q=qById(id);if(!q)return;if(filterArea&&q.area!==filterArea)return;
@@ -554,7 +614,7 @@ function donut(pct,color,size){size=size||120;const r=size/2-10,c=2*Math.PI*r;re
 const NAV=[
  ["Estudo",[["inicio","Início","home"],["especialidade","Minha Especialidade","target"],["dossies","Dossiês da Banca","book"],["questoes","Banco de Questões","quiz"],["simulados","Simulados","timer"]]],
  ["Planejamento",[["cronograma","Meu Cronograma","plan"],["calendario","Calendário de Provas","cal"],["desempenho","Desempenho","chart"]]],
- ["Revisão",[["erros","Caderno de Erros","x"],["salvos","Salvos e Grifos","star"],["flashcards","Flashcards","cards"]]],
+ ["Revisão",[["erros","Caderno de Erros","x"],["salvos","Salvos e Grifos","star"],["flashcards","Flashcards","cards"],["vespera","Modo Véspera","zap"]]],
  ["Comunidade",[["ranking","Ranking","trophy"],["avisos","Avisos","bell"],["perfil","Meu Perfil","user"],["home","Página inicial","home"]]]
 ];
 function route(){return (location.hash||"#inicio").slice(1).split("/");}
@@ -620,9 +680,9 @@ function vEspecialidade(){
   '<div class="card"><div class="sub" style="font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase">'+(isR1?"O que a prova cobra":"Pré-requisito")+'</div><h2 style="margin-top:6px">'+(isR1?"Clínica, Cirurgia, Pediatria, GO e Preventiva":esc(pre))+'</h2><p class="sub">'+(isR1?"Em geral, com peso parecido entre as áreas. Cada banca tem sua cara: veja no dossiê.":"A prova cobra a fundo a área do pré-requisito.")+'</p></div>'+
   '<div class="card"><div class="sub" style="font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase">Suas provas</div><h2 style="margin-top:6px">'+u.bancas.length+' instituição(ões)</h2><p class="sub">'+u.bancas.map(esc).join(", ")+'</p></div></div>'+
   '<div class="card" style="margin-bottom:16px"><div class="head" style="margin-bottom:10px"><div><h2>Melhores instituições para '+esc(u.esp)+'</h2><p class="sub">Vagas, concorrência e nota de corte dos últimos anos.</p></div></div>'+
-  '<div class="note" style="margin-bottom:12px">Os números entram aqui a partir dos editais e resultados oficiais de cada instituição. Por enquanto a tabela mostra a estrutura.</div>'+
-  '<div class="tbl-wrap"><table class="t"><thead><tr><th>Instituição</th><th>Vagas</th><th>Candidatos/vaga</th><th>Nota de corte</th><th>Prova</th><th></th></tr></thead><tbody>'+
-  rows.map(b=>'<tr><td><b>'+esc(b)+'</b>'+(u.bancas.includes(b)?' <span class="tag">sua prova</span>':'')+'</td><td>[a preencher]</td><td>[a preencher]</td><td>[a preencher]</td><td>[data do edital]</td><td><a href="#dossie/'+b.toLowerCase()+'">Ver dossiê</a></td></tr>').join("")+'</tbody></table></div></div>'+
+  '<div class="note" style="margin-bottom:12px">Dados do ciclo 2026 (ingresso em 2026), a partir dos resultados e editais oficiais divulgados. A nota de corte muda por especialidade e hospital: mostramos Clínica Médica como referência. "—" significa que ainda não encontramos o dado público.</div>'+
+  '<div class="tbl-wrap"><table class="t"><thead><tr><th>Instituição</th><th>Vagas (total)</th><th>Candidatos/vaga</th><th>Nota de corte 2026</th><th>Prova</th><th></th></tr></thead><tbody>'+
+  rows.map(b=>'<tr><td><b>'+esc(b)+'</b>'+(u.bancas.includes(b)?' <span class="tag">sua prova</span>':'')+'</td><td>'+((CONC[b]||{}).vagas||"—")+'</td><td>'+((CONC[b]||{}).cv||"—")+((CONC[b]||{}).cand&&(CONC[b]||{}).cand!=="—"?'<br><span class="sub" style="font-size:12px">'+CONC[b].cand+' inscritos</span>':'')+'</td><td>'+esc((CONC[b]||{}).corte||"—")+'</td><td>'+(b==="UFRJ"?"ENARE":b==="UNICAMP"?"Respostas curtas":b==="SUS-BA"?"Objetiva + discursiva":"Objetiva")+'</td><td><a href="#dossie/'+b.toLowerCase()+'">Ver dossiê</a></td></tr>').join("")+'</tbody></table></div></div>'+
   '<div class="card"><h2>Outras especialidades</h2><div class="grid g2" style="margin-top:12px"><div><h3>Acesso direto (R1)</h3><p class="sub">'+ESPEC_R1.filter(e=>e!=="Ainda não sei").map(esc).join(" · ")+'</p></div><div><h3>Com pré-requisito (R+)</h3><div class="tbl-wrap"><table class="t"><tbody>'+ESPEC_RMAIS.map(e=>'<tr><td>'+esc(e[0])+'</td><td class="sub">pré-req.: '+esc(e[1])+'</td></tr>').join("")+'</tbody></table></div></div></div></div>';
 }
 
@@ -652,7 +712,7 @@ function vDossie(id){
   const d=DOSSIES.find(x=>x.id===id)||DOSSIES[0];
   if(d.status!=="ok"){return '<a href="#dossies" class="sub">← Dossiês</a><div class="head" style="margin-top:8px"><div><h1>'+esc(d.nome)+'</h1><p class="sub">'+esc(d.inst)+'</p></div></div><div class="card"><span class="tag warn">Em produção</span><h2 style="margin-top:10px">Este dossiê está sendo montado</h2><p class="sub">Estamos analisando as provas oficiais de '+esc(d.inst)+' e um médico revisa tudo antes de publicar. Enquanto isso, veja o <a href="#dossie/enare">Dossiê ENAMED/ENARE</a>.</p></div>';}
   const html=S.hl[d.id]||dossHTML(d);
-  return '<a href="#dossies" class="sub">← Dossiês</a><div class="head" style="margin-top:8px"><div><h1>'+esc(d.nome)+' '+d.anos+'</h1><p class="sub">Selecione qualquer trecho pra grifar em 3 cores ou anotar. Tudo fica salvo em "Salvos e Grifos".</p></div><div class="row"><button class="btn ghost sm" data-act="hl-clear" data-id="'+d.id+'">Limpar grifos</button><a class="btn sm" href="#questoes">Fazer as questões desta banca</a></div></div>'+
+  return '<a href="#dossies" class="sub">← Dossiês</a><div class="head" style="margin-top:8px"><div><h1>'+esc(d.nome)+' '+d.anos+'</h1><p class="sub">Selecione qualquer trecho pra grifar em 3 cores ou anotar. Tudo fica salvo em "Salvos e Grifos".</p></div><div class="row"><button class="btn ghost sm" data-act="speak" data-src="doss">'+ic("play").replace('<svg','<svg width="16" height="16"')+' Ouvir resumo</button><button class="btn ghost sm" data-act="hl-clear" data-id="'+d.id+'">Limpar grifos</button><a class="btn sm" href="#questoes">Fazer as questões desta banca</a></div></div>'+
   '<div class="row" style="align-items:flex-start;flex-wrap:nowrap;gap:28px"><article class="card doss" id="doss" data-id="'+d.id+'" style="flex:1;min-width:0">'+html+'</article>'+
   '<aside style="width:220px;flex:none;position:sticky;top:20px" class="toc card pad-s"><b>Neste dossiê</b>'+[["d-raio","Raio-X da banca"],["d-top","Temas cobrados"],["d-resumo","Resumo"],["d-relampago","Questões relâmpago"],["d-nao","O que não cai"],["d-vespera","Checklist da véspera"]].map(x=>'<a href="javascript:void(0)" data-act="goto" data-v="'+x[0]+'">'+x[1]+'</a>').join("")+'</aside></div>';
 }
@@ -662,8 +722,18 @@ function afterDossie(){
   c.innerHTML='<h3 style="margin-bottom:8px">Questões por área (% da prova)</h3>'+barChart(AREAS.map(a=>({label:a,short:a.split(" ")[0].replace("Ginecologia","GO").replace("Medicina","Preventiva"),value:Math.round(qs.filter(q=>q.area===a).length/qs.length*100),color:AREA_COLOR[a]})),{unit:"%",max:40,h:200,label:"Questões por área"});
 }
 
-function filteredQ(){return Q.filter(q=>(!qf.banca||q.banca===qf.banca)&&(!qf.area||q.area===qf.area)&&(!qf.tema||q.tema===qf.tema)&&(!qf.status||(qf.status==="nao"&&!S.ans[q.id])||(qf.status==="erradas"&&S.ans[q.id]&&!S.ans[q.id].ok)||(qf.status==="certas"&&S.ans[q.id]&&S.ans[q.id].ok)||(qf.status==="salvas"&&S.saved.includes(q.id))));}
-const openBody=(q,mode,show)=>{if(!show)return '<p class="sub" style="font-size:13px;margin:0 0 6px">Questão de resposta curta: escreva sua resposta e depois confira o gabarito oficial.</p><textarea id="open-ans" rows="3" style="width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit" placeholder="Sua resposta">'+esc(qview.txt||"")+'</textarea>';const a=S.ans[q.id];return (qview.txt?'<div class="alt" style="cursor:default"><span class="lt">Você</span><span>'+esc(qview.txt)+'</span></div>':'')+'<div class="alt right" style="cursor:default"><span class="lt">✓</span><span><b>Gabarito oficial:</b> '+esc(q.resp)+'</span></div>'+(mode==="bank"?(a?'<p class="sub" style="margin:6px 0 0">Marcado como '+(a.ok?'certa':'errada')+'.</p>':'<div class="row" style="gap:8px;margin:6px 0 10px"><span class="sub" style="align-self:center">Você acertou?</span><button class="btn" data-act="open-grade" data-v="1">Acertei</button><button class="btn ghost" data-act="open-grade" data-v="0">Errei</button></div>'):'');};
+function filteredQ(){return Q.filter(q=>(!qf.banca||q.banca===qf.banca)&&(!qf.ano||String(q.ano)===String(qf.ano))&&(!qf.dif||DIFF[q.id]===qf.dif)&&(!qf.area||q.area===qf.area)&&(!qf.tema||q.tema===qf.tema)&&(!qf.status||(qf.status==="nao"&&!S.ans[q.id])||(qf.status==="erradas"&&S.ans[q.id]&&!S.ans[q.id].ok)||(qf.status==="certas"&&S.ans[q.id]&&S.ans[q.id].ok)||(qf.status==="salvas"&&S.saved.includes(q.id))));}
+const normTxt=t=>(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9%\s]/g," ");
+const STOP=new Set("para pela pelo com sem que dos das nos nas uma uns umas por como mais menos entre sobre apos ate deve sera pode ser esta este essa esse isso caso ou e de da do a o os as em no na ao aos se nao sim tipo qualquer pontua pontuam sinonimia resposta apenas outros outras outro outra deve".split(" "));
+function gradeOpen(q,txt){const ans=normTxt(txt);const aw=ans.split(/\s+/).filter(Boolean);if(!aw.length)return {nota:0,miss:[],ok:false,empty:true};
+  let gab=(q.resp||"").split(/(?:não pontua|nao pontua|qualquer conduta|outros medicamentos)/i)[0];
+  const alts=gab.split(/\s+ou\s+|;|\/|,(?=\s*[a-zà-ú])/i).map(x=>x.trim()).filter(x=>x.length>1);
+  const has=k=>aw.some(w=>w===k||(k.length>=5&&w.length>=5&&(w.startsWith(k.slice(0,5))||k.startsWith(w.slice(0,5)))));
+  let best={f:0,miss:[]};(alts.length?alts:[gab]).forEach(al=>{const ks=normTxt(al).split(/\s+/).filter(k=>k&&(k.length>=4||/\d/.test(k))&&!STOP.has(k));if(!ks.length)return;const hit=ks.filter(has);const f=hit.length/ks.length;if(f>best.f||!best.ks)best={f,miss:ks.filter(k=>!has(k)),ks};});
+  const nota=Math.round(best.f*10);return {nota,miss:best.miss||[],ok:nota>=7};}
+const openBody=(q,mode,show)=>{if(!show)return '<p class="sub" style="font-size:13px;margin:0 0 6px">Questão de resposta curta: escreva sua resposta e depois confira o gabarito oficial.</p><textarea id="open-ans" rows="3" style="width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit" placeholder="Sua resposta">'+esc(qview.txt||"")+'</textarea>';const a=S.ans[q.id];const G=qview.txt?gradeOpen(q,qview.txt):null;
+  const gradeBox=G?'<div class="grade"><div class="n" style="color:'+(G.nota>=7?"var(--ok)":G.nota>=4?"var(--warn)":"var(--bad)")+'">'+G.nota+'<span style="font-size:14px">/10</span></div><div><b>Correção automática</b><p class="sub" style="margin:2px 0 0;font-size:14px">'+(G.nota>=7?"Sua resposta bate com o gabarito oficial.":G.nota>=4?"Resposta parcial."+(G.miss.length?" Faltou citar: <b>"+G.miss.slice(0,4).map(esc).join(", ")+"</b>.":""):"Sua resposta não bate com o gabarito."+(G.miss.length?" A banca esperava: <b>"+G.miss.slice(0,5).map(esc).join(", ")+"</b>.":""))+' Compare abaixo e, se discordar, corrija a marcação.</p></div></div>':'<p class="sub" style="font-size:13px">Você não escreveu resposta. Confira o gabarito.</p>';
+  return gradeBox+(qview.txt?'<div class="alt" style="cursor:default"><span class="lt">Você</span><span>'+esc(qview.txt)+'</span></div>':'')+'<div class="alt right" style="cursor:default"><span class="lt">✓</span><span><b>Gabarito oficial:</b> '+esc(q.resp)+'</span></div>'+(mode==="bank"?(a?'<p class="sub" style="margin:6px 0 0">Marcado como <b>'+(a.ok?'certa':'errada')+'</b>. <button class="btn ghost sm" data-act="open-grade" data-v="'+(a.ok?0:1)+'">Corrigir para '+(a.ok?'errada':'certa')+'</button></p>':'<div class="row" style="gap:8px;margin:6px 0 10px"><span class="sub" style="align-self:center">Você acertou?</span><button class="btn" data-act="open-grade" data-v="1">Acertei</button><button class="btn ghost" data-act="open-grade" data-v="0">Errei</button></div>'):'');};
 const isOk=(q,i)=>i===q.c||(!!q.ok&&q.ok.includes(i));
 const corrL=q=>q.ok?q.ok.map(i=>L[i]).join(' ou '):L[q.c];
 const qFigs=q=>q.img&&q.img.length?'<div class="q-figs">'+q.img.map(u=>'<img src="'+u+'" alt="Imagem da questão" loading="lazy" data-act="zoom" data-src="'+u+'">').join("")+'</div>':'';
@@ -682,24 +752,36 @@ function qCard(q,mode){ // mode: 'bank' | 'sim'
       '<div class="resumo"><table><thead><tr>'+q.tab[0].map(h=>'<th>'+esc(h)+'</th>').join("")+'</tr></thead><tbody>'+q.tab.slice(1).map(r=>'<tr>'+r.map(c=>'<td>'+esc(c)+'</td>').join("")+'</tr>').join("")+'</tbody></table></div>'+
       (qview.tutor?'<div class="tutor"><b style="display:flex;gap:8px;align-items:center">'+ic("bot").replace('aria-hidden="true"','aria-hidden="true" width="18" height="18"')+'Tutor MedRise</b><p style="margin:8px 0 0">'+esc(q.tut)+'</p></div>':'<button class="btn ghost" style="margin-top:12px" data-act="tutor">'+ic("bot").replace('<svg','<svg width="18" height="18"')+'Não entendi, me explica de outro jeito</button>')+'</div>';}
   }
-  return '<div class="card"><div class="row" style="gap:8px;align-items:center"><span class="tag" style="background:'+AREA_COLOR[q.area]+'1A;color:'+AREA_COLOR[q.area]+'">'+esc(q.area)+'</span><span class="tag gray">'+esc(q.tema)+'</span><span class="tag warn">'+esc(q.banca)+' '+q.ano+' · Q'+q.num+'</span></div>'+
+  return '<div class="card"><div class="row" style="gap:8px;align-items:center"><span class="tag" style="background:'+AREA_COLOR[q.area]+'1A;color:'+AREA_COLOR[q.area]+'">'+esc(q.area)+'</span><span class="tag gray">'+esc(q.tema)+'</span><span class="tag warn">'+esc(q.banca)+' '+q.ano+' · Q'+q.num+'</span><span class="tag gray">'+(DIFF[q.id]||"")+'</span></div>'+
    '<p class="q-enun">'+esc(q.e)+'</p>'+qFigs(q)+alts+(mode==="bank"&&!show?'<p class="sub" style="font-size:12px;margin:4px 0 0">Dica: clique com o botão direito numa alternativa pra riscá-la.</p>':'')+foot+'</div>';
 }
 function vQuestoes(){
   const list=filteredQ();if(qf.idx>=list.length)qf.idx=0;const q=list[qf.idx];
   const temas=[...new Set(Q.filter(x=>!qf.area||x.area===qf.area).map(x=>x.tema))];
   const s=stats();
-  return '<div class="head"><div><h1>Banco de Questões</h1><p class="sub">'+Q.length+' questões de provas oficiais. Filtre por banca, área, tema e status.</p></div><div class="sub">'+s.tot+' respondidas · '+s.pct+'% de acerto</div></div>'+
+  return '<div class="head"><div><h1>Banco de Questões</h1><p class="sub">'+Q.length+' questões de provas oficiais. Filtre por banca, ano, área, tema, dificuldade e status.</p></div><div class="sub">'+s.tot+' respondidas · '+s.pct+'% de acerto</div></div>'+
   '<div class="note" style="margin-bottom:14px;color:var(--ink2);background:#EFFAF8">Questões das provas oficiais, com gabarito definitivo da banca. Novas bancas são adicionadas toda semana.</div>'+
   '<div class="card pad-s" style="margin-bottom:16px"><div class="grid g4"><label class="f">Grande área<select data-f="area"><option value="">Todas</option>'+AREAS.map(a=>'<option '+(qf.area===a?"selected":"")+'>'+a+'</option>').join("")+'</select></label>'+
   '<label class="f">Tema<select data-f="tema"><option value="">Todos</option>'+temas.map(t=>'<option '+(qf.tema===t?"selected":"")+'>'+esc(t)+'</option>').join("")+'</select></label>'+
   '<label class="f">Status<select data-f="status">'+[["","Todas"],["nao","Não respondidas"],["erradas","Erradas"],["certas","Certas"],["salvas","Salvas"]].map(([v,l])=>'<option value="'+v+'" '+(qf.status===v?"selected":"")+'>'+l+'</option>').join("")+'</select></label>'+
-  '<label class="f">Banca<select data-f="banca"><option value="">Todas</option>'+[...new Set(Q.map(x=>x.banca))].map(b=>'<option '+(qf.banca===b?"selected":"")+'>'+esc(b)+'</option>').join("")+'</select></label></div></div>'+
+  '<label class="f">Banca<select data-f="banca"><option value="">Todas</option>'+[...new Set(Q.map(x=>x.banca))].map(b=>'<option '+(qf.banca===b?"selected":"")+'>'+esc(b)+'</option>').join("")+'</select></label>'+
+  '<label class="f">Ano<select data-f="ano"><option value="">Todos</option>'+ANOS.map(y=>'<option '+(String(qf.ano)===String(y)?"selected":"")+'>'+y+'</option>').join("")+'</select></label>'+
+  '<label class="f">Dificuldade<select data-f="dif"><option value="">Todas</option>'+["Fácil","Média","Difícil"].map(d=>'<option '+(qf.dif===d?"selected":"")+'>'+d+'</option>').join("")+'</select></label>'+
+  '<div class="f" style="align-self:end"><button class="btn ghost" data-act="qf-20" style="width:100%">Sortear 20 questões</button></div></div></div>'+
   (q?'<div class="sub" style="margin-bottom:8px">Questão '+(qf.idx+1)+' de '+list.length+'</div>'+qCard(q,"bank"):'<div class="empty">Nenhuma questão com esses filtros.</div>');
 }
 
+function adaptPick(n){const s=stats();const u=S.user||{};const F=temaFreq((u.bancas||[]).map(bancaQ));
+  const pool=Q.filter(q=>q.tipo!=="aberta"&&!q.anul);
+  const score=q=>{const b=s.byTema[q.tema];const acc=b&&b.t?b.o/b.t:null;const a=S.ans[q.id];let sc=0;
+    if(acc!=null)sc+=(1-acc)*10;else sc+=3;if(a&&!a.ok)sc+=4;if(a&&a.ok)sc-=6;if(!a)sc+=2;sc+=Math.min(3,(F[q.tema]?F[q.tema].n:0)/2);return sc+Math.random()*2;};
+  const ranked=pool.map(q=>[q,score(q)]).sort((a,b)=>b[1]-a[1]);const out=[],per={};
+  for(const [q] of ranked){if(out.length>=n)break;if((per[q.tema]||0)>=4)continue;per[q.tema]=(per[q.tema]||0)+1;out.push(q.id);}return out;}
+function weakTemas(){const s=stats();return Object.entries(s.byTema).filter(([,v])=>v.t&&v.o/v.t<0.6).sort((a,b)=>a[1].o/a[1].t-b[1].o/b[1].t).map(([t])=>t);}
 function vSimulados(){
+  const wt=weakTemas();
   return '<div class="head"><div><h1>Simulados</h1><p class="sub">Prova com cronômetro, gabarito no final, nota por área e ranking anônimo.</p></div></div>'+
+  '<div class="card hero" style="margin-bottom:18px"><div class="row" style="justify-content:space-between;align-items:center;gap:16px"><div style="flex:1;min-width:240px"><span class="tag">Novo</span><h2 style="margin-top:8px;color:#fff">Simulado adaptativo</h2><p class="sub" style="margin:6px 0 0">O sistema olha onde você erra e monta 20 questões com mais peso nos seus temas fracos e nos temas que mais caem nas suas bancas. A cada simulado ele se ajusta de novo.'+(wt.length?' Agora o foco vai ser: <b>'+wt.slice(0,4).map(esc).join(", ")+'</b>.':' Como você ainda tem poucas respostas, ele começa pelos temas mais cobrados.')+'</p></div><button class="btn" data-act="sim-adapt">Gerar simulado adaptativo</button></div></div>'+
   '<div class="grid g2" style="margin-bottom:22px">'+SIMULADOS.map(s=>{const done=S.sims.filter(x=>x.sid===s.id);const best=done.length?Math.max(...done.map(x=>Math.round(x.ok/x.total*100))):null;
    return '<div class="card"><div class="row" style="justify-content:space-between;align-items:center"><span class="tag">'+s.qs.length+' questões · '+s.min+' min</span>'+(best!=null?'<span class="tag ok">Melhor nota: '+best+'%</span>':'')+'</div><h2 style="margin-top:10px">'+esc(s.nome)+'</h2><p class="sub">'+esc(s.desc)+'</p><button class="btn" data-act="sim-start" data-id="'+s.id+'">'+(done.length?"Refazer":"Começar")+'</button></div>';}).join("")+'</div>'+
   '<div class="card"><h2>Histórico</h2>'+(S.sims.length?'<div class="tbl-wrap"><table class="t" style="margin-top:8px"><thead><tr><th>Simulado</th><th>Data</th><th>Acertos</th><th>Nota</th><th>Tempo</th><th></th></tr></thead><tbody>'+S.sims.map((x,i)=>'<tr><td>'+esc(x.nome)+'</td><td>'+x.dt+'</td><td>'+x.ok+'/'+x.total+'</td><td><b>'+Math.round(x.ok/x.total*100)+'%</b></td><td>'+Math.round(x.secs/60)+' min</td><td><a href="#res/'+i+'">Ver resultado</a></td></tr>').reverse().join("")+'</tbody></table></div>':'<p class="sub">Você ainda não fez nenhum simulado.</p>')+'</div>';
@@ -738,24 +820,24 @@ function buildPlan(){
   const u=S.user;const s=stats();const d=daysTo(u.data);const weeks=Math.max(1,Math.min(12,d!=null&&d>0?Math.ceil(d/7):8));
   const weight={};AREAS.forEach(a=>{const b=s.by[a];const acc=b.t?b.o/b.t:0.5;weight[a]=1+(1-acc);});
   const tw=AREAS.reduce((x,a)=>x+weight[a],0);
-  const temasPorArea={};Q.forEach(q=>{(temasPorArea[q.area]=temasPorArea[q.area]||[]);if(!temasPorArea[q.area].includes(q.tema))temasPorArea[q.area].push(q.tema);});
-  const plan=[];for(let w=0;w<weeks;w++){const items=AREAS.map(a=>{const h=Math.max(1,Math.round(u.horas*weight[a]/tw));const ts=temasPorArea[a];return {area:a,h,tema:ts[w%ts.length]};});
+  const F=temaFreq((u.bancas||[]).map(bancaQ));const temasPorArea={};AREAS.forEach(a=>{temasPorArea[a]=Object.entries(F).filter(([,v])=>v.area===a).sort((x,y)=>{const sx=s.byTema[x[0]],sy=s.byTema[y[0]];const px=sx&&sx.t?sx.o/sx.t:0.6,py=sy&&sy.t?sy.o/sy.t:0.6;return (y[1].n*(1.6-py))-(x[1].n*(1.6-px));}).map(([t,v])=>({t,n:v.n}));if(!temasPorArea[a].length)temasPorArea[a]=[{t:"Revisão geral",n:0}];});
+  const plan=[];for(let w=0;w<weeks;w++){const items=AREAS.map(a=>{const h=Math.max(1,Math.round(u.horas*weight[a]/tw));const ts=temasPorArea[a];const t1=ts[(w*2)%ts.length],t2=ts[(w*2+1)%ts.length];return {area:a,h,tema:t1.t+(t2&&t2.t!==t1.t?" · "+t2.t:""),n:t1.n+(t2&&t2.t!==t1.t?t2.n:0)};});
     plan.push({w:w+1,items,rev:w%2===1,sim:w%2===1});}
   return {weeks,plan,weight,tw};
 }
 function vCronograma(){
   const u=S.user;const P=buildPlan();
-  return '<div class="head"><div><h1>Meu Cronograma</h1><p class="sub">Montado automaticamente com base na data da prova, nas suas '+u.horas+'h por semana e no seu desempenho. Áreas em que você erra mais ganham mais horas.</p></div><a class="btn ghost" href="#perfil">Ajustar horas e data</a></div>'+
+  return '<div class="head"><div><h1>Meu Cronograma</h1><p class="sub">Montado automaticamente com a data da sua prova, suas '+u.horas+'h por semana (cerca de '+(Math.round(u.horas/6*10)/10)+'h por dia, 6 dias), os temas que mais caem em '+esc((u.bancas||[]).join(", ")||"todas as bancas")+' e o seu desempenho. Temas que mais caem e em que você mais erra vêm primeiro.</p></div><a class="btn ghost" href="#perfil">Ajustar horas e data</a></div>'+
   '<div class="card chart" style="margin-bottom:16px"><h2>Divisão das suas horas por área</h2>'+barChart(AREAS.map(a=>({label:a,short:a.split(" ")[0].replace("Ginecologia","GO").replace("Medicina","Preventiva"),value:Math.max(1,Math.round(u.horas*P.weight[a]/P.tw)),color:AREA_COLOR[a]})),{unit:"h",label:"Horas por área"})+'</div>'+
   P.plan.map(p=>'<div class="card" style="margin-bottom:12px"><div class="row" style="justify-content:space-between;align-items:center"><h2>Semana '+p.w+'</h2>'+(p.sim?'<span class="tag">Inclui simulado</span>':'')+'</div><div class="tbl-wrap"><table class="t" style="margin-top:8px"><tbody>'+
-   p.items.map((it,k)=>{const key=p.w+"_"+k;const done=S.plan.done[key];return '<tr><td style="width:44px"><input type="checkbox" aria-label="Marcar como feito" data-act="plan-done" data-k="'+key+'" '+(done?"checked":"")+' style="width:20px;height:20px"></td><td><b style="color:'+AREA_COLOR[it.area]+'">'+esc(it.area)+'</b><br><span class="sub">'+esc(it.tema)+'</span></td><td>'+it.h+'h</td><td>'+Math.round(it.h*6)+' questões</td></tr>';}).join("")+
+   p.items.map((it,k)=>{const key=p.w+"_"+k;const done=S.plan.done[key];return '<tr><td style="width:44px"><input type="checkbox" aria-label="Marcar como feito" data-act="plan-done" data-k="'+key+'" '+(done?"checked":"")+' style="width:20px;height:20px"></td><td><b style="color:'+AREA_COLOR[it.area]+'">'+esc(it.area)+'</b><br><span class="sub">'+esc(it.tema)+(it.n?' <span class="tag gray" style="font-size:11px">caiu '+it.n+'x nas suas bancas</span>':'')+'</span></td><td>'+it.h+'h</td><td>'+Math.round(it.h*6)+' questões</td></tr>';}).join("")+
    (p.rev?'<tr><td></td><td><b>Revisão</b><br><span class="sub">Caderno de erros + flashcards</span></td><td>—</td><td>—</td></tr>':'')+'</tbody></table></div></div>').join("");
 }
 
 function vDesempenho(){
   const s=stats();const areaItems=AREAS.map(a=>({label:a,short:a.split(" ")[0].replace("Ginecologia","GO").replace("Medicina","Preventiva"),value:s.by[a].t?Math.round(s.by[a].o/s.by[a].t*100):0,color:AREA_COLOR[a]}));
   const temas=Object.entries(s.byTema).sort((a,b)=>a[1].o/a[1].t-b[1].o/b[1].t);
-  return '<div class="head"><div><h1>Desempenho</h1><p class="sub">Seu aproveitamento por área, por tema e nos simulados.</p></div></div>'+stCard()+stMaterias()+
+  return '<div class="head"><div><h1>Desempenho</h1><p class="sub">Seu aproveitamento por área, por tema, por banca e nos simulados.</p></div></div>'+vChance()+stCard()+stMaterias()+
   (s.tot?'<div class="grid g2" style="margin-bottom:16px"><div class="card chart"><h2>Acerto por área</h2>'+barChart(areaItems,{max:100,unit:"%",label:"Acerto por área"})+'</div><div class="card chart"><h2>Questões feitas por área</h2>'+barChart(AREAS.map(a=>({label:a,short:a.split(" ")[0].replace("Ginecologia","GO").replace("Medicina","Preventiva"),value:s.by[a].t,color:AREA_COLOR[a]})),{label:"Questões por área"})+'</div></div>'+
   '<div class="card"><h2>Por tema</h2><div class="tbl-wrap"><table class="t" style="margin-top:8px"><thead><tr><th>Tema</th><th>Área</th><th>Feitas</th><th style="width:40%">Acerto</th></tr></thead><tbody>'+temas.map(([t,v])=>{const p=Math.round(v.o/v.t*100);return '<tr><td><b>'+esc(t)+'</b></td><td class="sub">'+esc(v.area)+'</td><td>'+v.t+'</td><td><div class="row" style="align-items:center;gap:10px;flex-wrap:nowrap"><div class="bar-h" style="flex:1"><i style="width:'+p+'%;background:'+(p<60?"var(--bad)":"var(--teal)")+'"></i></div><b>'+p+'%</b></div></td></tr>';}).join("")+'</tbody></table></div></div>':'<div class="empty">Resolva questões ou faça um simulado pra ver seu desempenho. <br><a href="#questoes">Ir para o banco de questões</a></div>');
 }
@@ -793,7 +875,7 @@ function vAvisos(){
 }
 function vPerfil(){
   const u=S.user;const list=u.tipo==="R1"?ESPEC_R1:ESPEC_RMAIS.map(e=>e[0]);
-  return '<div class="head"><div><h1>Meu Perfil</h1><p class="sub">Tudo aqui personaliza a plataforma.</p></div></div><div class="card" style="max-width:720px"><div class="grid g2">'+
+  return '<div class="head"><div><h1>Meu Perfil</h1><p class="sub">Tudo aqui personaliza a plataforma.</p></div></div><div class="card" style="max-width:720px;margin-bottom:16px"><h2>MedRise no celular</h2><p class="sub" style="margin:4px 0 12px">Instale como app (sem loja de aplicativos) e baixe as questões pra estudar offline, no plantão ou sem sinal.</p><div class="row" style="gap:10px"><button class="btn" data-act="pwa-install">Instalar o app</button><button class="btn ghost" data-act="pwa-offline">Baixar para estudar offline</button></div></div><div class="card" style="max-width:720px"><div class="grid g2">'+
   '<label class="f">Nome<input type="text" id="p-nome" value="'+esc(u.nome)+'"></label>'+
   '<label class="f">Tipo de residência<select id="p-tipo"><option value="R1" '+(u.tipo==="R1"?"selected":"")+'>Acesso direto (R1)</option><option value="R+" '+(u.tipo==="R+"?"selected":"")+'>Com pré-requisito (R+)</option></select></label>'+
   '<label class="f">Especialidade<select id="p-esp">'+list.map(e=>'<option '+(u.esp===e?"selected":"")+'>'+esc(e)+'</option>').join("")+'</select></label>'+
@@ -919,6 +1001,7 @@ function render(){
     case "ranking":html=vRanking();break;
     case "avisos":html=vAvisos();break;
     case "perfil":html=vPerfil();break;
+    case "vespera":html=vVespera();break;
     default:html=vInicio();
   }
   root.innerHTML=shell(html);
@@ -954,12 +1037,20 @@ document.addEventListener("click",e=>{
   if(a.startsWith("ob-")){render();return;}
   // questions
   if(a==="pick"){if(qview.show)return;qview.sel=+t.dataset.i;render();return;}
-  if(a==="answer"){const q=filteredQ()[qf.idx];if(q.tipo==="aberta"){const ta=$("#open-ans");qview.txt=ta?ta.value:"";qview.show=true;render();return;}S.ans[q.id]={ok:isOk(q,qview.sel),ch:qview.sel,ts:Date.now()};save();qview.show=true;render();return;}
+  if(a==="answer"){const q=filteredQ()[qf.idx];if(q.tipo==="aberta"){const ta=$("#open-ans");qview.txt=ta?ta.value:"";if(qview.txt.trim()){const G=gradeOpen(q,qview.txt);S.ans[q.id]={ok:G.ok,ch:-1,ts:Date.now(),nota:G.nota,auto:1};save();}qview.show=true;render();return;}S.ans[q.id]={ok:isOk(q,qview.sel),ch:qview.sel,ts:Date.now()};save();qview.show=true;render();return;}
   if(a==="open-grade"){const q=filteredQ()[qf.idx];S.ans[q.id]={ok:v==="1",ch:-1,ts:Date.now()};save();render();return;}
+  if(a==="qf-banca"){qf={area:"",tema:"",status:"",banca:v,ano:"",dif:"",idx:0};return;}
+  if(a==="vesp-m"){vesp.m=+v;render();return;}
+  if(a==="speak"){let el=null,txt="";if(t.dataset.src==="vesp")el=$("#vesp-txt");if(t.dataset.src==="doss"){const art=$("#doss");if(art){const h=[...art.querySelectorAll("h2")];const i=h.findIndex(x=>x.id==="d-resumo");if(i>=0){let n=h[i];txt=n.textContent+". ";n=n.nextElementSibling;while(n&&n.tagName!=="H2"){txt+=n.innerText+" ";n=n.nextElementSibling;}}else txt=art.innerText;}}
+    if(el)txt=el.innerText;speakText(txt);return;}
+  if(a==="pwa-install"){if(window._bip){window._bip.prompt();window._bip=null;}else toast(/iphone|ipad/i.test(navigator.userAgent)?"No iPhone: toque em Compartilhar e depois em Adicionar à Tela de Início":"No Chrome: menu ⋮ e depois Instalar app");return;}
+  if(a==="pwa-offline"){if(!navigator.serviceWorker||!navigator.serviceWorker.controller){toast("Abra pelo site medrisebr.com pra baixar o modo offline");return;}const urls=[...new Set(Q.flatMap(q=>(q.img||[]).concat(q.aimg||[])))];navigator.serviceWorker.controller.postMessage({type:"offline-all",urls});toast("Baixando "+urls.length+" imagens pro modo offline…");return;}
   if(a==="tutor"){qview.tutor=true;render();return;}
   if(a==="q-next"||a==="q-prev"){const n=filteredQ().length;qf.idx=(qf.idx+(a==="q-next"?1:-1)+n)%n;qview={txt:"",sel:null,show:false,tutor:false,cut:qview.cut};render();window.scrollTo(0,0);return;}
   if(a==="save-q"){const id=t.dataset.id;S.saved=S.saved.includes(id)?S.saved.filter(x=>x!==id):S.saved.concat(id);save();toast(S.saved.includes(id)?"Questão salva":"Removida dos salvos");render();return;}
   // simulados
+  if(a==="sim-adapt"||a==="qf-20"){let qs,nome;if(a==="sim-adapt"){qs=adaptPick(20);nome="Simulado adaptativo";}else{const L=filteredQ().filter(q=>q.tipo!=="aberta");if(!L.length){toast("Nenhuma questão objetiva com esses filtros");return;}qs=L.map(q=>q.id).sort(()=>Math.random()-0.5).slice(0,20);nome="20 questões sorteadas";}
+    run={sid:a==="sim-adapt"?"adapt":"sorteio",nome,qs,i:0,ans:{},start:Date.now(),end:Date.now()+qs.length*3*60000};location.hash="#sim";return;}
   if(a==="sim-start"){const s=SIMULADOS.find(x=>x.id===t.dataset.id);run={sid:s.id,nome:s.nome,qs:s.qs.slice(),i:0,ans:{},start:Date.now(),end:Date.now()+s.min*60000};location.hash="#sim";return;}
   if(a==="sim-pick"){run.ans[run.qs[run.i]]=+t.dataset.i;render();return;}
   if(a==="sim-next"){run.i=Math.min(run.qs.length-1,run.i+1);render();return;}
@@ -979,6 +1070,7 @@ document.addEventListener("click",e=>{
 });
 document.addEventListener("change",e=>{
   const t=e.target;
+  if(t.dataset.vesp){vesp[t.dataset.vesp]=t.value;render();return;}
   if(t.dataset.f){qf[t.dataset.f]=t.value;if(t.dataset.f==="area")qf.tema="";qf.idx=0;qview={txt:"",sel:null,show:false,tutor:false,cut:qview.cut};render();return;}
   if(t.dataset.act==="plan-done"){S.plan.done[t.dataset.k]=t.checked;save();return;}
   if(t.id==="p-tipo"){S.user.tipo=t.value;S.user.esp=(t.value==="R1"?ESPEC_R1[0]:ESPEC_RMAIS[0][0]);save();render();}
