@@ -34,6 +34,16 @@ h1{font-size:26px} h2{font-size:19px} h3{font-size:16px}
 .nav .pill{margin-left:auto;background:var(--mint);color:var(--ink);font-size:11px;font-weight:700;border-radius:99px;padding:1px 7px}
 .main{flex:1;min-width:0;padding:28px 32px 60px;max-width:1240px}
 .topbar{display:none}
+.stw{margin:0 0 6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px 12px 10px}
+.stw .lbl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.6;font-weight:600}
+.stw .clk{font-family:Sora;font-weight:800;font-size:28px;color:#fff;margin:2px 0 4px;letter-spacing:.02em}
+.stw .st{font-size:12px;opacity:.8;display:flex;align-items:center;gap:7px;line-height:1.3}
+.st-dot{width:8px;height:8px;border-radius:50%;background:#7C9592;flex:none}.st-dot.on{background:var(--mint);box-shadow:0 0 0 3px rgba(94,242,200,.22)}
+.stw button{margin-top:10px;width:100%;background:transparent;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:10px;padding:7px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.stw button:hover{background:rgba(255,255,255,.08)}
+.topbar .tb-clk{width:auto;height:auto;display:flex;align-items:center;gap:7px;font-family:Sora;font-weight:700;font-size:15px;color:#fff;background:rgba(255,255,255,.08);border:0;border-radius:99px;padding:6px 12px;cursor:pointer}
+.st-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:12px 0 6px}.st-kpis div{background:#F3F9F8;border-radius:12px;padding:12px}.st-kpis b{font-family:Sora;font-size:20px;display:block}.st-kpis span{font-size:12px;color:var(--ink2)}
+@media(max-width:700px){.st-kpis{grid-template-columns:repeat(2,1fr)}}
 /* generic */
 .row{display:flex;gap:16px;flex-wrap:wrap}
 .grid{display:grid;gap:16px}
@@ -436,10 +446,36 @@ const AVISOS=[
 /* ================= STATE ================= */
 const KEY="medrise_v1";
 let S;
-function blank(){return {user:null,ans:{},saved:[],sims:[],hl:{},notes:[],cards:{},read:[],plan:{done:{}}};}
+function blank(){return {study:{},stPause:false,user:null,ans:{},saved:[],sims:[],hl:{},notes:[],cards:{},read:[],plan:{done:{}}};}
 function load(){try{const r=localStorage.getItem(KEY);S=r?Object.assign(blank(),JSON.parse(r)):blank();}catch(e){S=blank();}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 load();
+const STUDY_R=["questoes","simulados","sim","dossie","erros","flashcards","salvos"];
+let stLastAct=Date.now(),stN=0;
+const dayKey=(d)=>{d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
+const hms=s=>{s=Math.floor(s||0);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return h+":"+String(m).padStart(2,"0")+":"+String(x).padStart(2,"0");};
+const hm=s=>{s=Math.floor(s||0);const h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?h+"h"+String(m).padStart(2,"0"):m+"min";};
+const stToday=()=>(S.study||{})[dayKey()]||0;
+const stLastDays=n=>Array.from({length:n},(_,i)=>{const d=new Date();d.setDate(d.getDate()-(n-1-i));return {d,s:(S.study||{})[dayKey(d)]||0};});
+const stWeek=()=>stLastDays(7).reduce((a,x)=>a+x.s,0);
+const stTotal=()=>Object.values(S.study||{}).reduce((a,x)=>a+x,0);
+function stState(){if(!S.user)return "off";if(S.stPause)return "pause";if(!STUDY_R.includes((location.hash||"#inicio").slice(1).split("/")[0]))return "away";if(document.hidden||Date.now()-stLastAct>5*60e3)return "idle";return "on";}
+const ST_MSG={on:"Contando seu tempo de estudo",pause:"Pausado por você",away:"Abra questões, simulados ou dossiês pra contar",idle:"Parado: sem atividade há 5 min",off:""};
+function stPaint(){const st=stState(),t=hms(stToday());
+  document.querySelectorAll(".st-clk").forEach(e=>e.textContent=t);
+  document.querySelectorAll(".st-dot").forEach(e=>e.classList.toggle("on",st==="on"));
+  document.querySelectorAll(".st-msg").forEach(e=>e.textContent=ST_MSG[st]);
+  document.querySelectorAll(".st-btn").forEach(e=>e.textContent=S.stPause?"Retomar cronômetro":"Pausar cronômetro");}
+["mousemove","keydown","click","scroll","touchstart"].forEach(ev=>document.addEventListener(ev,()=>{stLastAct=Date.now();},{passive:true}));
+setInterval(()=>{if(stState()==="on"){const k=dayKey();S.study=S.study||{};S.study[k]=(S.study[k]||0)+1;if(++stN%15===0)save();}stPaint();},1000);
+window.addEventListener("pagehide",save);document.addEventListener("visibilitychange",()=>{if(document.hidden)save();});
+const stWidget=()=>'<div class="stw" aria-label="Cronômetro de estudo"><div class="lbl">Estudo hoje</div><div class="clk st-clk">'+hms(stToday())+'</div><div class="st"><span class="st-dot"></span><span class="st-msg">'+ST_MSG[stState()]+'</span></div><button class="st-btn" data-act="st-toggle">'+(S.stPause?"Retomar cronômetro":"Pausar cronômetro")+'</button></div>';
+function stCard(){const u=S.user||{};const meta=(u.horas||20)*3600;const wk=stWeek();const pct=Math.min(100,Math.round(wk/meta*100));
+  const days=stLastDays(7);const nm=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+  return '<div class="card" style="margin-bottom:16px"><div class="row" style="justify-content:space-between;align-items:center"><div><h2>Tempo de estudo</h2><p class="sub" style="margin:4px 0 0">O cronômetro conta sozinho enquanto você está em questões, simulados, dossiês, erros, salvos ou flashcards. Pausa se você sair da aba ou ficar 5 min parado.</p></div><button class="btn ghost sm st-btn" data-act="st-toggle">'+(S.stPause?"Retomar cronômetro":"Pausar cronômetro")+'</button></div>'+
+  '<div class="st-kpis"><div><b class="st-clk">'+hms(stToday())+'</b><span>Hoje</span></div><div><b>'+hm(wk)+'</b><span>Últimos 7 dias</span></div><div><b>'+hm(stTotal())+'</b><span>Total estudado</span></div><div><b>'+pct+'%</b><span>Meta da semana ('+(u.horas||20)+'h)</span></div></div>'+
+  '<div class="bar-h" style="margin:6px 0 4px"><i style="width:'+pct+'%"></i></div>'+
+  '<div class="chart" style="max-width:620px;margin-top:10px"><p class="sub" style="margin:0 0 4px;font-size:13px">Minutos estudados por dia</p>'+barChart(days.map(x=>({label:dayKey(x.d),short:nm[x.d.getDay()],value:Math.round(x.s/60),color:"#0FA3A3"})),{unit:"m",label:"Minutos estudados por dia",h:220})+'</div></div>';}
 let ob={step:0,nome:"",tipo:"R1",esp:"",bancas:[],data:"",horas:20,fase:"Internato"};
 let qf={area:"",tema:"",status:"",banca:"",idx:0};
 let qview={txt:"",sel:null,show:false,tutor:false,cut:{}};
@@ -501,8 +537,8 @@ function shell(content){
   let nav='';NAV.forEach(([sec,items])=>{nav+='<div class="nav-sec">'+sec+'</div><nav class="nav">';items.forEach(([id,lab,icn])=>{
     let pill='';if(id==="avisos"&&unread)pill='<span class="pill">'+unread+'</span>';if(id==="erros"&&errN)pill='<span class="pill">'+errN+'</span>';
     nav+='<a href="#'+id+'" class="'+((r===id||(r==="dossie"&&id==="dossies")||(r==="sim"&&id==="simulados")||(r==="res"&&id==="simulados"))?"on":"")+'">'+ic(icn)+lab+pill+'</a>';});nav+='</nav>';});
-  return '<div class="topbar">'+LOGO_FULL(34,true)+'<button data-act="menu" aria-label="Abrir menu">'+ic("menu")+'</button></div>'+
-   '<div class="app"><aside class="side" id="side"><div class="brand">'+LOGO_FULL(40,true)+'</div>'+nav+'</aside><main class="main" id="main">'+content+'</main></div>';
+  return '<div class="topbar">'+LOGO_FULL(34,true)+'<div class="row" style="gap:8px;align-items:center"><button class="tb-clk" data-act="goto-inicio" aria-label="Tempo de estudo hoje"><span class="st-dot"></span><span class="st-clk">'+hms(stToday())+'</span></button><button data-act="menu" aria-label="Abrir menu">'+ic("menu")+'</button></div></div>'+
+   '<div class="app"><aside class="side" id="side"><div class="brand">'+LOGO_FULL(40,true)+'</div>'+stWidget()+nav+'</aside><main class="main" id="main">'+content+'</main></div>';
 }
 
 /* ================= ONBOARDING ================= */
@@ -540,7 +576,7 @@ function vInicio(){
   return '<div class="head"><div><h1>Olá, '+esc(u.nome)+'</h1><p class="sub">'+esc(u.tipo==="R1"?"Rumo ao R1":"Rumo ao R+")+' em '+esc(u.esp)+' · '+u.bancas.map(esc).join(", ")+'</p></div><a class="btn" href="#questoes">Continuar estudando</a></div>'+
   '<div class="grid g3" style="margin-bottom:16px"><div class="card hero" style="grid-column:span 2"><div class="row" style="justify-content:space-between;align-items:center"><div><div class="sub" style="font-weight:600;letter-spacing:.1em;text-transform:uppercase;font-size:12px">Sua prova</div><div style="font-size:18px;font-weight:600;margin-top:4px">'+(u.data?fmtDate(u.data):"Defina a data no perfil")+'</div><p class="sub" style="margin:6px 0 0">Meta da semana: '+Math.round(u.horas*6)+' questões · '+u.horas+'h de estudo</p></div><div style="text-align:right">'+(d!=null?'<div class="count">'+Math.max(d,0)+'</div><div class="sub">dias restantes</div>':"")+'</div></div></div>'+
   '<div class="card" style="display:flex;align-items:center;gap:16px">'+donut(s.pct)+'<div><h3>Aproveitamento</h3><p class="sub" style="margin:4px 0 0">'+(s.tot?"Nas "+s.tot+" questões que você fez.":"Resolva questões pra ver seu índice.")+'</p></div></div></div>'+
-  '<div class="grid g6" style="margin-bottom:16px">'+kp.map(k=>'<div class="card pad-s kpi"><div class="ic">'+ic(k[0])+'</div><div class="v">'+k[2]+'</div><div class="l">'+k[1]+'</div></div>').join("")+'</div>'+
+  stCard()+'<div class="grid g6" style="margin-bottom:16px">'+kp.map(k=>'<div class="card pad-s kpi"><div class="ic">'+ic(k[0])+'</div><div class="v">'+k[2]+'</div><div class="l">'+k[1]+'</div></div>').join("")+'</div>'+
   '<div class="grid g2" style="margin-bottom:16px"><div class="card chart"><h2>Acerto por grande área</h2><p class="sub" style="margin:4px 0 10px">Onde você está forte e onde precisa reforçar.</p>'+(s.tot?barChart(areaItems,{max:100,unit:"%",label:"Acerto por área"}):'<div class="empty">Resolva questões pra liberar este gráfico.</div>')+'</div>'+
   '<div class="card chart"><h2>Evolução nos simulados</h2><p class="sub" style="margin:4px 0 10px">Nota de cada simulado, em %. A linha tracejada é uma referência de 70%.</p>'+(simPts.length?lineChart(simPts,{goal:70,goalLabel:"referência 70%",unit:"%",label:"Evolução"}):'<div class="empty">Faça seu primeiro simulado pra ver sua evolução. <br><a href="#simulados">Ir para simulados</a></div>')+'</div></div>'+
   '<div class="grid g3"><div class="card"><h2>Temas pra reforçar</h2>'+(fracos.length?'<ul style="padding-left:18px;margin:10px 0 0">'+fracos.map(([t,v])=>'<li style="margin-bottom:6px"><b>'+esc(t)+'</b> <span class="sub">('+Math.round(v.o/v.t*100)+'% de acerto)</span></li>').join("")+'</ul><a class="btn sm ghost" style="margin-top:10px" href="#erros">Refazer erros</a>':'<p class="sub">Nenhum tema fraco ainda. Continue resolvendo questões.</p>')+'</div>'+
@@ -693,7 +729,7 @@ function vCronograma(){
 function vDesempenho(){
   const s=stats();const areaItems=AREAS.map(a=>({label:a,short:a.split(" ")[0].replace("Ginecologia","GO").replace("Medicina","Preventiva"),value:s.by[a].t?Math.round(s.by[a].o/s.by[a].t*100):0,color:AREA_COLOR[a]}));
   const temas=Object.entries(s.byTema).sort((a,b)=>a[1].o/a[1].t-b[1].o/b[1].t);
-  return '<div class="head"><div><h1>Desempenho</h1><p class="sub">Seu aproveitamento por área, por tema e nos simulados.</p></div></div>'+
+  return '<div class="head"><div><h1>Desempenho</h1><p class="sub">Seu aproveitamento por área, por tema e nos simulados.</p></div></div>'+stCard()+
   (s.tot?'<div class="grid g2" style="margin-bottom:16px"><div class="card chart"><h2>Acerto por área</h2>'+barChart(areaItems,{max:100,unit:"%",label:"Acerto por área"})+'</div><div class="card chart"><h2>Questões feitas por área</h2>'+barChart(AREAS.map(a=>({label:a,short:a.split(" ")[0].replace("Ginecologia","GO").replace("Medicina","Preventiva"),value:s.by[a].t,color:AREA_COLOR[a]})),{label:"Questões por área"})+'</div></div>'+
   '<div class="card"><h2>Por tema</h2><div class="tbl-wrap"><table class="t" style="margin-top:8px"><thead><tr><th>Tema</th><th>Área</th><th>Feitas</th><th style="width:40%">Acerto</th></tr></thead><tbody>'+temas.map(([t,v])=>{const p=Math.round(v.o/v.t*100);return '<tr><td><b>'+esc(t)+'</b></td><td class="sub">'+esc(v.area)+'</td><td>'+v.t+'</td><td><div class="row" style="align-items:center;gap:10px;flex-wrap:nowrap"><div class="bar-h" style="flex:1"><i style="width:'+p+'%;background:'+(p<60?"var(--bad)":"var(--teal)")+'"></i></div><b>'+p+'%</b></div></td></tr>';}).join("")+'</tbody></table></div></div>':'<div class="empty">Resolva questões ou faça um simulado pra ver seu desempenho. <br><a href="#questoes">Ir para o banco de questões</a></div>');
 }
@@ -874,6 +910,8 @@ function finishSim(){
 }
 document.addEventListener("click",e=>{
   const t=e.target.closest("[data-act]");if(!t)return;const a=t.dataset.act,v=t.dataset.v;
+  if(a==="st-toggle"){S.stPause=!S.stPause;save();stPaint();return;}
+  if(a==="goto-inicio"){location.hash="#inicio";return;}
   if(a==="zoom"){e.preventDefault();e.stopPropagation();const z=document.createElement("div");z.id="zoom";z.innerHTML='<img src="'+t.dataset.src+'" alt="">';z.onclick=()=>z.remove();document.body.appendChild(z);return;}
   if(a==="demo-pick"){const id=DEMO_Q[demo.i];if(demo.show[id])return;demo.sel[id]=+t.dataset.i;$("#demo-box").innerHTML=demoBox();return;}
   if(a==="demo-answer"){demo.show[DEMO_Q[demo.i]]=true;$("#demo-box").innerHTML=demoBox();return;}
