@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MedRise — Preparatório Residência</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#06343F; --ink2:#33514F; --mute:#5E7775; --teal:#0FA3A3; --teal-d:#0B7F7F; --mint:#5EF2C8;
+  --bg:#EDF5F4; --card:#FFFFFF; --line:#D6E5E3; --ok:#12805C; --ok-bg:#E3F6EE; --bad:#B4232C; --bad-bg:#FBE9EA;
+  --warn:#8A5A00; --warn-bg:#FFF4D6; --r:14px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--teal-d)}
+h1,h2,h3{font-family:Sora,Inter,sans-serif;margin:0;letter-spacing:-0.02em}
+h1{font-size:26px} h2{font-size:19px} h3{font-size:16px}
+.app{display:flex;min-height:100vh}
+/* sidebar */
+.side{width:248px;flex:none;background:var(--ink);color:#fff;padding:20px 14px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh;overflow-y:auto}
+.brand{display:flex;align-items:center;padding:4px 8px 18px}.logo-full{display:block;width:auto}
+.brand b{font-family:Sora;font-size:22px;font-weight:800;letter-spacing:-0.04em}
+.brand b span{color:var(--mint)}
+.brand small{display:block;font-size:9.5px;letter-spacing:.22em;opacity:.75;font-weight:600}
+.nav-sec{font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.55;padding:14px 10px 4px;font-weight:600}
+.nav a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;color:#DDEDEB;text-decoration:none;font-weight:500;font-size:14px}
+.nav a:hover{background:rgba(255,255,255,.07);color:#fff}
+.nav a.on{background:rgba(94,242,200,.14);color:#fff}
+.nav a.on svg{color:var(--mint)}
+.nav svg{width:18px;height:18px;flex:none}
+.nav .pill{margin-left:auto;background:var(--mint);color:var(--ink);font-size:11px;font-weight:700;border-radius:99px;padding:1px 7px}
+.main{flex:1;min-width:0;padding:28px 32px 60px;max-width:1240px}
+.topbar{display:none}
+/* generic */
+.row{display:flex;gap:16px;flex-wrap:wrap}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g6{grid-template-columns:repeat(6,minmax(0,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+.card.pad-s{padding:14px}
+.sub{color:var(--mute);font-size:14px}
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;background:#E1F1EF;color:var(--teal-d)}
+.tag.gray{background:#EEF2F2;color:var(--ink2)}
+.tag.warn{background:var(--warn-bg);color:var(--warn)}
+.tag.ok{background:var(--ok-bg);color:var(--ok)}
+.tag.bad{background:var(--bad-bg);color:var(--bad)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:10px;padding:11px 18px;font-weight:600;cursor:pointer;background:var(--teal);color:#fff;text-decoration:none;min-height:44px}
+.btn:hover{background:var(--teal-d)}
+.btn.dark{background:var(--ink)} .btn.dark:hover{background:#0A4A57}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)} .btn.ghost:hover{background:#F2F8F7}
+.btn.sm{padding:6px 12px;min-height:36px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.head p{margin:4px 0 0}
+label.f{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--ink2)}
+select,input[type=text],input[type=number],input[type=date],textarea{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff;min-height:44px}
+textarea{min-height:80px;resize:vertical}
+.kpi{display:flex;flex-direction:column;gap:2px}
+.kpi .v{font-family:Sora;font-size:28px;font-weight:800;letter-spacing:-0.03em}
+.kpi .l{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.kpi .ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#E1F1EF;color:var(--teal-d);margin-bottom:8px}
+.kpi .ic svg{width:18px;height:18px}
+.bar-h{height:10px;border-radius:99px;background:#E5EFEE;overflow:hidden}
+.bar-h i{display:block;height:100%;background:var(--teal);border-radius:99px}
+table.t{width:100%;border-collapse:collapse;font-size:14px}
+table.t th{text-align:left;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line)}
+table.t td{padding:10px;border-bottom:1px solid #EAF2F1;vertical-align:top}
+.tbl-wrap{overflow-x:auto}
+.empty{padding:28px;text-align:center;color:var(--mute);border:1px dashed var(--line);border-radius:var(--r);background:#FAFDFC}
+.note{font-size:13px;color:var(--warn);background:var(--warn-bg);border-radius:10px;padding:10px 12px}
+.hero{background:linear-gradient(120deg,#06343F 0%,#0A5560 100%);color:#fff;border:0}
+.hero .sub{color:#BFE3DE}
+.count{font-family:Sora;font-size:44px;font-weight:800;color:var(--mint);line-height:1}
+/* question */
+.q-enun{font-size:16px;line-height:1.6;margin:10px 0 16px}
+.alt{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;min-height:44px}
+.alt:hover{border-color:var(--teal)}
+.alt .lt{flex:none;width:26px;height:26px;border-radius:99px;border:1.5px solid #9DB9B6;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.alt.sel{border-color:var(--teal);background:#EFFAF8}
+.alt.sel .lt{background:var(--teal);border-color:var(--teal);color:#fff}
+.alt.right{border-color:var(--ok);background:var(--ok-bg)}
+.alt.right .lt{background:var(--ok);border-color:var(--ok);color:#fff}
+.alt.wrong{border-color:var(--bad);background:var(--bad-bg)}
+.alt.wrong .lt{background:var(--bad);border-color:var(--bad);color:#fff}
+.alt.cut{opacity:.45;text-decoration:line-through}
+.coment{border-top:1px solid var(--line);margin-top:16px;padding-top:16px}
+.resumo{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:12px}
+.resumo table{width:100%;border-collapse:collapse;font-size:14px}
+.resumo th{background:#E8F4F2;text-align:left;padding:8px 12px;font-size:13px}
+.resumo td{padding:8px 12px;border-top:1px solid #E5EFEE;vertical-align:top}
+.tutor{background:#F1FBF8;border:1px solid #BDEBDD;border-radius:12px;padding:14px;margin-top:12px}
+.qnav{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:6px}
+.qnav button{height:38px;border-radius:9px;border:1px solid var(--line);background:#fff;cursor:pointer;font-weight:600;font-size:13px}
+.qnav button.done{background:#E1F1EF;border-color:#A9D8D3}
+.qnav button.cur{background:var(--ink);color:#fff;border-color:var(--ink)}
+.timer{font-family:Sora;font-weight:800;font-size:22px}
+/* dossie */
+.doss{max-width:780px}
+.doss h2{margin:28px 0 10px}
+.doss p,.doss li{line-height:1.7}
+.doss .box{border-left:0;background:#F4FAF9;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:12px 0}
+mark.h1{background:#FFF0A8} mark.h2{background:#C8F4E4} mark.h3{background:#FFD3DA}
+mark{border-radius:3px;padding:0 1px}
+.hl-bar{position:fixed;z-index:20;display:none;gap:6px;background:var(--ink);padding:6px;border-radius:10px;box-shadow:0 6px 20px rgba(6,52,63,.25)}
+.hl-bar button{width:32px;height:32px;border-radius:8px;border:2px solid rgba(255,255,255,.4);cursor:pointer}
+.hl-bar .nt{width:auto;padding:0 10px;color:#fff;background:transparent;font-size:13px;font-weight:600}
+.toc a{display:block;padding:6px 0;text-decoration:none;font-size:14px;color:var(--ink2)}
+.toc a:hover{color:var(--teal-d)}
+/* chart */
+.chart svg{width:100%;height:auto;display:block}
+.chart text{font-family:Inter,sans-serif;fill:var(--mute);font-size:11px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink2);margin-top:8px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+/* flash */
+.flash{min-height:220px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:18px;padding:30px;cursor:pointer}
+/* onboarding */
+.ob{max-width:640px;margin:40px auto;padding:0 16px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:99px;padding:8px 14px;cursor:pointer;font-size:14px;font-weight:500;min-height:40px}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.steps{display:flex;gap:6px;margin-bottom:22px}
+.steps i{flex:1;height:5px;border-radius:99px;background:var(--line)}
+.steps i.on{background:var(--teal)}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:10px;font-size:14px;z-index:30;display:none}
+.tile{display:flex;gap:14px;align-items:flex-start;text-decoration:none;color:inherit}
+.tile:hover{border-color:var(--teal)}
+.tile .ic{flex:none;width:42px;height:42px;border-radius:12px;background:#E1F1EF;color:var(--teal-d);display:flex;align-items:center;justify-content:center}
+.tile .ic svg{width:22px;height:22px}
+
+/* landing */
+.lp{background:#fff;color:var(--ink);overflow-x:clip}.lp *{min-width:0}
+.lp-nav{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.lp-in{max-width:1180px;margin:0 auto;padding:0 20px}
+.lp-nav .lp-in{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:68px;flex-wrap:wrap}
+.lp-logo{display:flex;align-items:center;gap:9px;font-family:Sora;font-weight:800;font-size:22px;letter-spacing:-.04em;text-decoration:none;color:var(--ink)}
+.lp-logo b span{color:var(--teal)}.lp-logo b{font-weight:800}.lp-wm{display:flex;flex-direction:column;line-height:1}.lp-wm small{font-family:Inter,sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.2em;color:var(--ink2);margin-top:4px}
+.lp-links{display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+.lp-links a{text-decoration:none;color:var(--ink2);font-weight:500;font-size:14px;cursor:pointer}
+.lp-links a:hover{color:var(--teal-d)}.lp-links a.btn,.lp-links a.btn:hover{color:#fff}.lp-links a.btn.ghost{color:var(--ink)}
+.lp-hero{background:linear-gradient(160deg,#06343F 0%,#0A4E5A 60%,#0B6B6B 100%);color:#fff;overflow:hidden}
+.lp-hero .lp-in{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:48px;align-items:center;padding-top:56px;padding-bottom:64px}
+.lp-hero h1{font-size:clamp(28px,3.3vw,42px);line-height:1.1;letter-spacing:-.035em;text-wrap:balance}
+.lp-hero h1 em{font-style:normal;color:var(--mint)}
+.lp-hero p.lead{font-size:16px;color:#CBE9E4;margin:18px 0 28px;max-width:540px}
+.lp-hero .btn{font-size:15px;padding:12px 22px}
+.lp-hero .btn.ghost{color:#fff;border-color:rgba(255,255,255,.35)} .lp-hero .btn.ghost:hover{background:rgba(255,255,255,.08)}
+.lp-checks{display:flex;gap:18px;flex-wrap:wrap;margin-top:22px;font-size:14px;color:#CBE9E4}
+.lp-checks span{display:flex;gap:6px;align-items:center}
+.mock{background:#EDF5F4;border-radius:18px;padding:16px;box-shadow:0 30px 60px rgba(0,0,0,.28);color:var(--ink);transform:rotate(-1deg)}
+.mock .card{padding:14px;border-radius:12px}
+.lp-band{padding:60px 0}
+.lp-band.soft{background:var(--bg)}
+.lp-band h2{font-size:clamp(22px,2.3vw,30px);line-height:1.18;letter-spacing:-.03em;text-wrap:balance;max-width:760px}
+.lp-band .lead{font-size:15.5px;color:var(--ink2);max-width:680px;margin:12px 0 0}
+.lp-strip{background:var(--ink);color:#BFE3DE;padding:18px 0;font-size:14px}
+.lp-strip .lp-in{display:flex;gap:10px 22px;flex-wrap:wrap;align-items:center;justify-content:center}
+.lp-strip b{color:#fff}
+.vs{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0;border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-top:34px}
+.vs>div{padding:26px}
+.vs .old{background:#F7F7F7;color:#5b6466}
+.vs .new{background:#06343F;color:#fff}
+.vs h3{font-size:18px;margin-bottom:14px}
+.vs ul{list-style:none;padding:0;margin:0}
+.vs li{padding:10px 0;border-top:1px solid rgba(127,127,127,.18);display:flex;gap:10px}
+.vs .new li b{color:var(--mint)}
+.step{display:flex;flex-direction:column;gap:10px}
+.step .n{font-family:Sora;font-weight:800;font-size:30px;color:var(--teal);line-height:1}
+.feat .ic{width:44px;height:44px;border-radius:12px;background:#E1F1EF;color:var(--teal-d);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.feat .ic svg{width:22px;height:22px}
+.feat h3{margin-bottom:6px}
+.price{display:flex;flex-direction:column;gap:12px;position:relative}
+.price.best{border:2px solid var(--teal);box-shadow:0 18px 40px rgba(15,163,163,.18)}
+.price .flag{position:absolute;top:-13px;left:20px;background:var(--teal);color:#fff;font-size:12px;font-weight:700;border-radius:99px;padding:4px 12px}
+.price .val{font-family:Sora;font-weight:800;font-size:26px;letter-spacing:-.03em}
+.price ul{padding-left:0;list-style:none;margin:4px 0 8px}
+.price li{padding:6px 0;display:flex;gap:8px;font-size:14px}
+.price li::before{content:"✓";color:var(--teal-d);font-weight:800}
+.faq details{border-bottom:1px solid var(--line);padding:16px 0}
+.faq summary{cursor:pointer;font-weight:600;font-size:16px}
+.faq p{color:var(--ink2);margin:10px 0 0}
+.lp-cta{background:linear-gradient(120deg,#0FA3A3,#0B7F7F);color:#fff;text-align:center}
+.lp-cta h2{margin:0 auto;color:#fff}
+.lp-foot .lp-wm b{color:#fff}.lp-foot .lp-wm b span{color:var(--mint)}.lp-foot{background:#04262E;color:#9FC4BF;padding:34px 0;font-size:13px}
+.lp-img{width:100%;border-radius:18px;display:block;object-fit:cover}.float-kpi{position:absolute;left:-22px;bottom:-26px;padding:12px 16px;box-shadow:0 14px 34px rgba(6,52,63,.25);color:var(--ink)}.float-tag{position:absolute;right:-14px;top:22px;padding:10px 14px;box-shadow:0 14px 34px rgba(6,52,63,.25);color:var(--ink)}@media (max-width:860px){.float-kpi{left:10px;bottom:-22px}.float-tag{right:10px}}
+@media (max-width:860px){.hero-mini{grid-template-columns:repeat(3,minmax(0,1fr))}.mock .grid.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.lp-hero .lp-in{grid-template-columns:minmax(0,1fr);padding-top:44px}.vs{grid-template-columns:minmax(0,1fr)}.lp-links a.hide-s{display:none}.mock{transform:none}}
+
+.kick{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--teal-d);margin-bottom:10px}
+.lp-center{text-align:center}.lp-center h2,.lp-center .lead{margin-left:auto;margin-right:auto}
+.pill-k{display:inline-flex;align-items:center;gap:8px;background:rgba(94,242,200,.14);color:var(--mint);font-size:13px;font-weight:600;padding:6px 12px;border-radius:99px}
+.pill-k svg{width:16px;height:16px}
+.hero-ck{list-style:none;padding:0;margin:0 0 26px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 16px}
+.ck{display:flex;gap:10px;align-items:center;font-size:14px}
+.ck-i{flex:none;width:22px;height:22px;border-radius:99px;background:var(--mint);color:var(--ink);display:flex;align-items:center;justify-content:center}
+.ck-i svg{width:14px;height:14px;stroke-width:3}
+.lp-hero .ck{color:#E3F5F2}
+.ck-list{list-style:none;padding:0;margin:20px 0 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 18px}
+.ck-list .ck-i{background:#E1F1EF;color:var(--teal-d)}
+.ck-list.light .ck{color:#E3F5F2}.ck-list.light .ck-i{background:var(--mint);color:var(--ink)}
+.lp-checks svg{width:16px;height:16px}
+.hero-mini{margin-top:40px;gap:12px}
+.mini{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:12px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;color:#fff}
+.mini svg{width:22px;height:22px;color:var(--mint);margin-bottom:4px}.mini span{font-size:12px;color:#BFE3DE}
+.lp-marq{background:#052A33;padding:30px 0 34px;overflow:hidden}
+.marq{overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.marq-t{display:flex;gap:14px;width:max-content;animation:marq 55s linear infinite}
+.marq:hover .marq-t{animation-play-state:paused}
+@keyframes marq{to{transform:translateX(-50%)}}
+.lg-card{flex:none;height:64px;min-width:120px;padding:8px 16px;background:#fff;border-radius:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.18)}.lg-card img{max-height:44px;max-width:150px;width:auto;height:auto;display:block}.marq-t.rev{animation-direction:reverse;animation-duration:60s}
+@media (prefers-reduced-motion:reduce){.marq-t{animation:none;flex-wrap:wrap;width:auto;justify-content:center}}
+.m-item{display:flex;align-items:center;gap:10px;background:#fff;color:var(--ink);border-radius:12px;padding:10px 16px 10px 10px;font-weight:700;font-family:Sora;font-size:15px;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.m-badge{width:34px;height:34px;border-radius:9px;background:linear-gradient(140deg,#06343F,#0FA3A3);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;letter-spacing:.02em}
+.strip-i{display:flex;gap:12px;align-items:center}
+.ic-c{flex:none;width:42px;height:42px;border-radius:12px;background:#E1F1EF;color:var(--teal-d);display:inline-flex;align-items:center;justify-content:center}
+.ic-c svg{width:22px;height:22px}.ic-c.lg{width:52px;height:52px;border-radius:14px}.ic-c.lg svg{width:26px;height:26px}
+.ic-c.xl{width:76px;height:76px;border-radius:20px}.ic-c.xl svg{width:40px;height:40px}
+.lp-dark{background:linear-gradient(160deg,#06343F,#0A4E5A);color:#fff}
+.lp-dark .kick{color:var(--mint)}.lp-dark h2{color:#fff}.lp-dark .lead{color:#CBE9E4}
+.dif{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:24px}
+.dif .ic-c{background:var(--mint);color:var(--ink)}
+.dif .num{font-family:Sora;font-weight:800;font-size:22px;color:rgba(255,255,255,.18)}
+.dif h3{color:#fff;margin:14px 0 6px;font-size:16px}.dif p{color:#CBE9E4;margin:0;font-size:14.5px}
+.cmp th,.cmp td{padding:14px 18px;font-size:15px}.cmp td:not(:first-child),.cmp th:not(:first-child){text-align:center;width:150px}
+.cmp .hl{background:#EFFAF8}.cmp th.hl{color:var(--teal-d)}
+.yes,.nope{display:inline-flex;width:26px;height:26px;border-radius:99px;align-items:center;justify-content:center}
+.yes{background:var(--ok-bg);color:var(--ok)}.nope{background:var(--bad-bg);color:var(--bad)}
+.yes svg,.nope svg{width:15px;height:15px;stroke-width:3}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;align-items:center}
+.sim-mock{box-shadow:0 24px 50px rgba(6,52,63,.14)}
+.doss-row{display:flex;gap:12px;overflow-x:auto;padding:26px 2px 6px;scroll-snap-type:x mandatory}
+.doss-card{flex:none;width:190px;scroll-snap-align:start;background:linear-gradient(160deg,#06343F,#0B6B6B);color:#fff;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;min-height:150px}
+.doss-card .ic-c{background:rgba(94,242,200,.18);color:var(--mint)}.doss-card .sub{color:#BFE3DE}
+.demo{background:#fff;color:var(--ink);border-radius:18px;overflow:hidden;box-shadow:0 30px 60px rgba(0,0,0,.3)}
+.demo-top{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.dq{width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:#fff;font-weight:700;cursor:pointer}
+.dq.cur{background:var(--ink);color:#fff;border-color:var(--ink)}.dq.okk{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}.dq.bad{background:var(--bad-bg);border-color:var(--bad);color:var(--bad)}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.cal-h{font-size:11px;font-weight:700;color:var(--mute);text-align:center;padding:4px 0}
+.cal-d{min-height:54px;border:1px solid #E5EFEE;border-radius:8px;padding:4px;font-size:12px;display:flex;flex-direction:column;gap:2px}
+.cal-d b{font-weight:600;color:var(--ink2)}
+.cal-d.ev{background:#EFFAF8;border-color:#A9D8D3}
+.cal-d i{font-style:normal;font-size:10px;font-weight:700;background:var(--teal);color:#fff;border-radius:4px;padding:1px 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bad-list{list-style:none;padding:0;margin:22px 0 0;display:flex;flex-direction:column;gap:12px}
+.bad-list li{display:flex;gap:12px;align-items:center;font-size:15px}
+.sol{background:linear-gradient(160deg,#06343F,#0B6B6B);border-radius:22px;padding:34px}
+.sol .ic-c{background:var(--mint);color:var(--ink)}
+.guar{display:flex;gap:26px;align-items:center;background:#EFFAF8;border:1px solid #BDEBDD;border-radius:22px;padding:30px}
+.guar .ic-c{background:var(--teal);color:#fff}
+@media (max-width:860px){.two{grid-template-columns:minmax(0,1fr);gap:28px}.hero-ck,.ck-list{grid-template-columns:minmax(0,1fr)}.guar{flex-direction:column;text-align:center}.cmp td:not(:first-child),.cmp th:not(:first-child){width:auto}}
+@media (max-width:1000px){.g4,.g6{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:800px){
+  .app{flex-direction:column}
+  .side{position:fixed;inset:0 auto 0 0;z-index:40;transform:translateX(-100%);transition:transform .2s}
+  .side.open{transform:none}
+  .topbar{display:flex;align-items:center;justify-content:space-between;background:var(--ink);color:#fff;padding:10px 16px;position:sticky;top:0;z-index:30}
+  .topbar b{font-family:Sora;font-weight:800;font-size:19px;letter-spacing:-.04em}.topbar b span{color:var(--mint)}
+  .topbar button{background:transparent;border:0;color:#fff;width:44px;height:44px}
+  .main{padding:18px 14px 50px}
+  .g2,.g3{grid-template-columns:minmax(0,1fr)}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div class="hl-bar" id="hlbar">
+  <button style="background:#FFF0A8" data-hl="h1" aria-label="Grifar em amarelo"></button>
+  <button style="background:#C8F4E4" data-hl="h2" aria-label="Grifar em verde"></button>
+  <button style="background:#FFD3DA" data-hl="h3" aria-label="Grifar em rosa"></button>
+  <button class="nt" data-hl="note">+ Nota</button>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(function(){
+"use strict";
+/* ================= ICONS ================= */
+const I = {
+  home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+  target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+  book:'<path d="M4 4h6a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4z"/><path d="M20 4h-6a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h7z"/>',
+  quiz:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+  timer:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/>',
+  cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  plan:'<path d="M4 6h16M4 12h10M4 18h7"/><circle cx="18" cy="16" r="3"/>',
+  x:'<circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/>',
+  star:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
+  cards:'<rect x="3" y="6" width="14" height="14" rx="2"/><path d="M7 3h12a2 2 0 0 1 2 2v12"/>',
+  trophy:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>',
+  bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  check:'<circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/>',
+  chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  spark:'<path d="M12 2v6M12 16v6M2 12h6M16 12h6M5 5l3 3M16 16l3 3M5 19l3-3M16 8l3-3"/>',
+  menu:'<path d="M3 6h18M3 12h18M3 18h18"/>',
+  bot:'<rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 4v4M9 13h.01M15 13h.01M9 17h6"/>',
+  shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
+  zap:'<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',
+  pen:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/>',
+  flag:'<path d="M5 21V4h11l-2 4 2 4H5"/>',
+  users:'<circle cx="9" cy="8" r="3.5"/><path d="M2 20a7 7 0 0 1 14 0"/><path d="M16 4a3.5 3.5 0 0 1 0 7M22 20a7 7 0 0 0-5-6.7"/>',
+  phone:'<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>',
+  layers:'<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>',
+  folder:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+  heart:'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>',
+  play:'<circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4z"/>',
+  ok:'<path d="M5 12l4 4 10-10"/>',
+  no:'<path d="M6 6l12 12M18 6L6 18"/>'
+};
+function LOGO_FULL(h,dark){h=h||40;const ink=dark?"#FFFFFF":"#06343F",acc=dark?"#5EF2C8":"#0FA3A3",sub=dark?"#BFE3DE":"#33514F";const id="lgf"+Math.random().toString(36).slice(2,7);
+ return '<svg class="logo-full" height="'+h+'" viewBox="0 0 176 48" role="img" aria-label="MedRise Preparatório Residência"><defs><linearGradient id="'+id+'" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#0FA3A3"/><stop offset="1" stop-color="#5EF2C8"/></linearGradient></defs>'+
+ '<path transform="translate(0,2) scale(0.6875)" d="M6 58 V18 L19 28 L32 2 L45 28 L58 18 V58 H47 V37 L32 49 L17 37 V58 Z" fill="url(#'+id+')"/>'+
+ '<text x="52" y="27" font-family="Sora,Inter,sans-serif" font-weight="800" font-size="25" letter-spacing="-0.8" textLength="120" lengthAdjust="spacingAndGlyphs" fill="'+ink+'">Med<tspan fill="'+acc+'">Rise</tspan></text>'+
+ '<text x="53" y="42" font-family="Inter,sans-serif" font-weight="700" font-size="7.4" textLength="118" lengthAdjust="spacing" fill="'+sub+'">PREPARATÓRIO RESIDÊNCIA</text></svg>';}
+function ic(n){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+I[n]+'</svg>';}
+const LOGO='<svg width="34" height="34" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#0FA3A3"/><stop offset="1" stop-color="#5EF2C8"/></linearGradient></defs><path d="M6 58 V18 L19 28 L32 2 L45 28 L58 18 V58 H47 V37 L32 49 L17 37 V58 Z" fill="url(#lg)"/></svg>';
+
+/* ================= DATA ================= */
+const AREAS=["Clínica Médica","Cirurgia","Pediatria","Ginecologia e Obstetrícia","Medicina Preventiva"];
+const AREA_COLOR={"Clínica Médica":"#0FA3A3","Cirurgia":"#06343F","Pediatria":"#3E7CB1","Ginecologia e Obstetrícia":"#9C5BA8","Medicina Preventiva":"#C08A1E"};
+const BANCAS=["UERJ","UFRJ","USP-SP","UNIFESP","SUS-SP","SCMSP","ENARE","PSU-MG","UNICAMP","SUS-BA","AMRIGS","SES-DF"];
+const ESPEC_R1=["Clínica Médica","Cirurgia Geral","Pediatria","Ginecologia e Obstetrícia","Medicina de Família e Comunidade","Ortopedia e Traumatologia","Anestesiologia","Dermatologia","Oftalmologia","Psiquiatria","Neurologia","Radiologia","Otorrinolaringologia","Infectologia","Medicina de Emergência","Neurocirurgia","Ainda não sei"];
+const ESPEC_RMAIS=[
+ ["Cardiologia","Clínica Médica"],["Gastroenterologia","Clínica Médica"],["Pneumologia","Clínica Médica"],["Nefrologia","Clínica Médica"],
+ ["Endocrinologia","Clínica Médica"],["Reumatologia","Clínica Médica"],["Hematologia","Clínica Médica"],["Oncologia Clínica","Clínica Médica"],
+ ["Cirurgia Plástica","Cirurgia Geral / Básica"],["Urologia","Cirurgia Geral / Básica"],["Cirurgia Vascular","Cirurgia Geral / Básica"],
+ ["Coloproctologia","Cirurgia Geral / Básica"],["Neonatologia","Pediatria"],["Medicina Intensiva Pediátrica","Pediatria"],["Mastologia","Cirurgia Geral ou GO"]
+];
+const Q=[
+ {id:"q1",area:"Clínica Médica",tema:"Diabetes mellitus",dif:"Fácil",
+  e:"Homem de 48 anos, assintomático, realiza exames de rotina: glicemia de jejum de 131 mg/dL. Repetida na semana seguinte: 128 mg/dL. Qual a conduta diagnóstica correta?",
+  a:["Solicitar TOTG antes de qualquer conclusão","Diagnosticar diabetes mellitus","Diagnosticar pré-diabetes","Repetir a glicemia em 6 meses","Solicitar peptídeo C"],c:1,
+  com:"Duas glicemias de jejum ≥ 126 mg/dL em ocasiões diferentes confirmam diabetes mellitus. Não é preciso TOTG para confirmar.",
+  tab:[["Critério","Diabetes","Pré-diabetes"],["Glicemia de jejum","≥ 126 mg/dL","100–125 mg/dL"],["HbA1c","≥ 6,5%","5,7–6,4%"],["TOTG 2 h","≥ 200 mg/dL","140–199 mg/dL"],["Glicemia ao acaso + sintomas","≥ 200 mg/dL","—"]],
+  tut:"Pensa assim: um exame alterado é suspeita, dois exames alterados (iguais ou diferentes) são diagnóstico. A exceção é a glicemia ao acaso ≥ 200 com sintomas clássicos (poliúria, polidipsia, perda de peso): aí um exame já basta."},
+ {id:"q2",area:"Clínica Médica",tema:"Hipertensão arterial",dif:"Média",
+  e:"Mulher de 52 anos, sem comorbidades, com hipertensão estágio 1 confirmada e sem resposta a mudanças de estilo de vida. Qual classe NÃO é preferencial como primeira linha em monoterapia?",
+  a:["Diurético tiazídico","Inibidor da ECA","Bloqueador do receptor de angiotensina","Bloqueador de canal de cálcio di-hidropiridínico","Betabloqueador"],c:4,
+  com:"As quatro classes preferenciais são tiazídicos, IECA, BRA e BCC. O betabloqueador fica reservado a situações específicas (pós-IAM, insuficiência cardíaca, controle de frequência).",
+  tab:[["Classe","Quando é a melhor escolha"],["Tiazídico","Idoso, negro, sem contraindicação"],["IECA / BRA","Diabetes, proteinúria, IC"],["BCC","Idoso, negro"],["Betabloqueador","Pós-IAM, IC, arritmias"]],
+  tut:"Decore as 4 da primeira linha com o mnemônico 'A-B-C-D' sem o B de beta: A (IECA/BRA, que agem na Angiotensina), C (Cálcio), D (Diurético). O betabloqueador só entra quando há uma indicação extra."},
+ {id:"q3",area:"Clínica Médica",tema:"Tireoide",dif:"Fácil",
+  e:"Mulher de 35 anos com cansaço, ganho de peso e intolerância ao frio. Qual perfil laboratorial é esperado no hipotireoidismo primário?",
+  a:["TSH baixo e T4 livre alto","TSH alto e T4 livre baixo","TSH baixo e T4 livre baixo","TSH normal e T4 livre alto","TSH alto e T4 livre alto"],c:1,
+  com:"No hipotireoidismo primário, a tireoide produz pouco T4. A hipófise responde aumentando o TSH.",
+  tab:[["Situação","TSH","T4 livre"],["Hipotireoidismo primário","Alto","Baixo"],["Hipotireoidismo subclínico","Alto","Normal"],["Hipertireoidismo primário","Baixo","Alto"],["Hipotireoidismo central","Baixo/normal","Baixo"]],
+  tut:"O TSH é o 'chefe gritando com o funcionário'. Se a tireoide (funcionária) trabalha pouco, o chefe grita mais alto: TSH sobe. Se ela trabalha demais, o chefe se cala: TSH cai."},
+ {id:"q4",area:"Clínica Médica",tema:"Intoxicações",dif:"Fácil",
+  e:"Adolescente admitida 4 horas após ingerir grande quantidade de paracetamol. Qual o antídoto específico?",
+  a:["Flumazenil","Naloxona","N-acetilcisteína","Atropina","Azul de metileno"],c:2,
+  com:"A N-acetilcisteína repõe a glutationa e neutraliza o metabólito tóxico do paracetamol (NAPQI). É mais eficaz quando iniciada em até 8 horas.",
+  tab:[["Intoxicação","Antídoto"],["Paracetamol","N-acetilcisteína"],["Opioides","Naloxona"],["Benzodiazepínicos","Flumazenil"],["Organofosforados","Atropina (+ pralidoxima)"],["Metemoglobinemia","Azul de metileno"]],
+  tut:"Associe: paracetamol 'acaba' com a glutationa do fígado, e a N-ACETILcisteína 'reabastece'. As outras opções são antídotos de outras intoxicações clássicas, que também caem muito."},
+ {id:"q5",area:"Cirurgia",tema:"Abdome agudo",dif:"Fácil",
+  e:"Jovem com dor que começou periumbilical e migrou para a fossa ilíaca direita. Ao exame, dor intensa à descompressão brusca no ponto de McBurney. Esse achado é o sinal de:",
+  a:["Rovsing","Murphy","Blumberg","Giordano","Cullen"],c:2,
+  com:"Blumberg é a dor à descompressão brusca no ponto de McBurney e indica irritação peritoneal, sugerindo apendicite aguda.",
+  tab:[["Sinal","O que é","Sugere"],["Blumberg","Dor à descompressão em McBurney","Apendicite"],["Rovsing","Dor na FID ao palpar a FIE","Apendicite"],["Murphy","Parada da inspiração ao palpar o hipocôndrio D","Colecistite"],["Giordano","Dor à punho-percussão lombar","Pielonefrite / cálculo"],["Cullen","Equimose periumbilical","Pancreatite grave"]],
+  tut:"Blumberg = 'Bate e Larga': você aperta e solta de repente, e a dor vem na hora que solta."},
+ {id:"q6",area:"Cirurgia",tema:"Trauma (ATLS)",dif:"Fácil",
+  e:"Vítima de colisão automobilística chega ao pronto-socorro. Segundo o ATLS, qual a primeira prioridade no atendimento primário?",
+  a:["Controle de hemorragias externas","Avaliação neurológica (Glasgow)","Via aérea com proteção da coluna cervical","Exposição completa do paciente","Ventilação"],c:2,
+  com:"O ABCDE começa pelo A: via aérea com restrição de movimento da coluna cervical. Hemorragia exsanguinante externa pode ser controlada já de início (xABCDE), mas, entre as opções clássicas, o A é a prioridade.",
+  tab:[["Letra","Prioridade"],["A","Via aérea + coluna cervical"],["B","Respiração e ventilação"],["C","Circulação e controle de hemorragia"],["D","Disfunção neurológica"],["E","Exposição e controle da hipotermia"]],
+  tut:"Sem via aérea, nada mais importa: o paciente morre em minutos. Por isso a ordem é A, depois B, depois C. Pense no que mata mais rápido primeiro."},
+ {id:"q7",area:"Cirurgia",tema:"Vias biliares",dif:"Fácil",
+  e:"Mulher de 45 anos com dor no hipocôndrio direito há 12 horas, febre e sinal de Murphy positivo. Qual o exame de imagem inicial de escolha?",
+  a:["Tomografia de abdome","Ultrassonografia de abdome","Colangiorressonância","Radiografia de abdome","CPRE"],c:1,
+  com:"O ultrassom é o exame inicial na suspeita de colecistite aguda: é barato, disponível e mostra cálculo, espessamento da parede e Murphy ultrassonográfico.",
+  tab:[["Exame","Uso principal"],["Ultrassom","Inicial na colecistite e colelitíase"],["Colangiorressonância","Suspeita de coledocolitíase"],["CPRE","Terapêutica (retirar cálculo do colédoco)"],["Tomografia","Complicações ou dúvida diagnóstica"]],
+  tut:"Vesícula: primeiro ultrassom, sempre. Colédoco com suspeita de pedra: colangiorressonância pra ver, CPRE pra tirar."},
+ {id:"q8",area:"Pediatria",tema:"Imunizações",dif:"Fácil",
+  e:"Pelo calendário do Programa Nacional de Imunizações, qual vacina deve ser aplicada ao nascer, idealmente ainda na maternidade?",
+  a:["Tríplice viral","BCG","Pentavalente","Febre amarela","Varicela"],c:1,
+  com:"BCG e hepatite B (primeira dose) são as vacinas do nascimento.",
+  tab:[["Idade","Vacinas principais"],["Ao nascer","BCG, Hepatite B"],["2 meses","Pentavalente, VIP, Pneumo, Rotavírus"],["9 meses","Febre amarela"],["12 meses","Tríplice viral, Pneumo (reforço), Meningo C (reforço)"]],
+  tut:"Ao nascer o bebê recebe proteção contra o que ele pode pegar logo cedo: tuberculose (BCG) e hepatite B (transmitida pela mãe)."},
+ {id:"q9",area:"Pediatria",tema:"Diarreia e desidratação",dif:"Média",
+  e:"Criança de 2 anos com diarreia há 2 dias, irritada, olhos fundos, bebe água avidamente e o sinal da prega desaparece lentamente. Segundo o Ministério da Saúde, qual o plano de hidratação?",
+  a:["Plano A, em domicílio","Plano B, terapia de reidratação oral na unidade de saúde","Plano C, hidratação venosa imediata","Apenas antidiarreico","Plano A com antibiótico"],c:1,
+  com:"A criança tem desidratação (dois ou mais sinais: irritação, olhos fundos, sede, prega que desaparece lentamente) sem sinais de gravidade. Isso indica plano B, com reidratação oral supervisionada na unidade.",
+  tab:[["Plano","Quando","Onde"],["A","Sem desidratação","Domicílio"],["B","Desidratação sem gravidade","Unidade de saúde, TRO"],["C","Desidratação grave (letargia, não consegue beber, prega muito lenta)","Hidratação venosa"]],
+  tut:"A = Ambulatorial/casa. B = Bebe na unidade. C = Cateter na veia. Se a criança ainda consegue beber, ela fica no B."},
+ {id:"q10",area:"Pediatria",tema:"Doenças respiratórias",dif:"Fácil",
+  e:"Lactente de 4 meses com coriza há 3 dias, evoluindo com taquipneia, sibilos e crepitações difusas. Qual o agente etiológico mais provável?",
+  a:["Streptococcus pneumoniae","Vírus sincicial respiratório","Bordetella pertussis","Mycoplasma pneumoniae","Haemophilus influenzae"],c:1,
+  com:"O quadro é de bronquiolite viral aguda, e o VSR é o principal agente. O tratamento é de suporte (oxigênio se necessário, hidratação, aspiração nasal).",
+  tab:[["Bronquiolite","Pontos-chave"],["Idade","Menores de 2 anos"],["Agente","VSR (principal)"],["Tratamento","Suporte; sem broncodilatador ou corticoide de rotina"],["Prevenção","Anticorpo monoclonal em grupos de risco"]],
+  tut:"Bebê pequeno + resfriado que desce pro pulmão com chiado = bronquiolite = VSR. É o primeiro episódio de chiado, diferente da asma."},
+ {id:"q11",area:"Ginecologia e Obstetrícia",tema:"Pré-natal",dif:"Fácil",
+  e:"Qual a principal finalidade da suplementação de ácido fólico no período periconcepcional?",
+  a:["Prevenir anemia ferropriva","Prevenir defeitos do tubo neural","Prevenir pré-eclâmpsia","Prevenir diabetes gestacional","Prevenir parto prematuro"],c:1,
+  com:"O ácido fólico reduz o risco de defeitos do tubo neural. O ideal é iniciar pelo menos 30 dias antes da concepção e manter no primeiro trimestre.",
+  tab:[["Suplemento","Objetivo"],["Ácido fólico","Prevenir defeitos do tubo neural"],["Sulfato ferroso","Prevenir anemia"],["Cálcio","Reduzir risco de pré-eclâmpsia em baixa ingesta"]],
+  tut:"O tubo neural fecha bem cedo, por volta da 4ª semana, muitas vezes antes de a mulher saber que está grávida. Por isso o folato tem que começar antes."},
+ {id:"q12",area:"Ginecologia e Obstetrícia",tema:"Síndromes hipertensivas",dif:"Média",
+  e:"Gestante de 34 semanas com PA de 170 x 115 mmHg, cefaleia intensa e escotomas. Qual a droga de escolha para prevenir convulsões?",
+  a:["Diazepam","Fenitoína","Sulfato de magnésio","Hidralazina","Metildopa"],c:2,
+  com:"O sulfato de magnésio é a droga de escolha para prevenir e tratar a eclâmpsia. A hidralazina serve para baixar a PA na crise, mas não previne convulsão.",
+  tab:[["Droga","Papel"],["Sulfato de magnésio","Prevenir e tratar convulsão (eclâmpsia)"],["Hidralazina / nifedipina","Crise hipertensiva"],["Metildopa","Hipertensão crônica na gestação (manutenção)"],["Gluconato de cálcio","Antídoto da intoxicação por magnésio"]],
+  tut:"Na pré-eclâmpsia grave você faz duas coisas: protege o cérebro (magnésio) e baixa a pressão (hidralazina ou nifedipina). Não confunda as duas funções."},
+ {id:"q13",area:"Ginecologia e Obstetrícia",tema:"Hemorragia pós-parto",dif:"Fácil",
+  e:"Puérpera com sangramento vaginal volumoso logo após a dequitação. Útero amolecido acima da cicatriz umbilical. Qual a causa mais provável?",
+  a:["Atonia uterina","Laceração de trajeto","Retenção placentária","Coagulopatia","Inversão uterina"],c:0,
+  com:"Útero amolecido e aumentado após o parto indica atonia uterina, a principal causa de hemorragia pós-parto. A conduta inicial é massagem uterina bimanual e ocitocina.",
+  tab:[["Os 4 Ts","Causa"],["Tônus","Atonia uterina (mais comum)"],["Trauma","Lacerações, rotura"],["Tecido","Restos placentários"],["Trombina","Coagulopatias"]],
+  tut:"Lembre dos 4 Ts. Se o útero está 'mole', o problema é Tônus: ele não contrai pra fechar os vasos."},
+ {id:"q14",area:"Medicina Preventiva",tema:"Testes diagnósticos",dif:"Média",
+  e:"Um teste diagnóstico foi aplicado em 200 pessoas doentes e deu positivo em 180. Qual a sensibilidade do teste?",
+  a:["80%","85%","90%","95%","Não é possível calcular"],c:2,
+  com:"Sensibilidade = verdadeiros positivos / total de doentes = 180/200 = 90%.",
+  tab:[["Medida","Fórmula","Pergunta que responde"],["Sensibilidade","VP / (VP + FN)","Dos doentes, quantos o teste pega?"],["Especificidade","VN / (VN + FP)","Dos sadios, quantos o teste libera?"],["VPP","VP / (VP + FP)","Deu positivo: qual a chance de ser doente?"],["VPN","VN / (VN + FN)","Deu negativo: qual a chance de ser sadio?"]],
+  tut:"Sensibilidade olha só pros doentes. Quem tem a doença, o teste 'sente'? 180 de 200 sentidos = 90%."},
+ {id:"q15",area:"Medicina Preventiva",tema:"Estudos epidemiológicos",dif:"Fácil",
+  e:"Um estudo selecionou fumantes e não fumantes e os acompanhou por 20 anos para comparar a incidência de câncer de pulmão. Qual o desenho do estudo?",
+  a:["Caso-controle","Coorte prospectiva","Transversal","Ensaio clínico randomizado","Ecológico"],c:1,
+  com:"Partir da exposição (fumar ou não) e seguir no tempo até o desfecho caracteriza um estudo de coorte. Como acompanha para frente, é prospectiva.",
+  tab:[["Desenho","Ponto de partida","Medida típica"],["Coorte","Exposição → desfecho","Risco relativo"],["Caso-controle","Desfecho → exposição passada","Odds ratio"],["Transversal","Tudo no mesmo momento","Prevalência"],["Ensaio clínico","Pesquisador aloca a intervenção","Risco relativo / NNT"]],
+  tut:"Coorte = 'Começa pela Causa'. Caso-controle = 'Começa pelo Caso (doente)' e olha pra trás."}
+];
+const DOSSIES=[
+ {id:"modelo",nome:"Dossiê Modelo",inst:"Estrutura de demonstração",status:"demo",anos:"—",nq:"—"},
+ ...BANCAS.map(b=>({id:b.toLowerCase(),nome:"Dossiê "+b+" 2027",inst:b,status:"producao",anos:"2022–2026",nq:"—"}))
+];
+const SIMULADOS=[
+ {id:"geral",nome:"Simulado Geral MedRise",desc:"15 questões das 5 grandes áreas",qs:Q.map(q=>q.id),min:30},
+ {id:"clinica",nome:"Mini simulado: Clínica Médica",desc:"4 questões",qs:["q1","q2","q3","q4"],min:8},
+ {id:"cirped",nome:"Mini simulado: Cirurgia + Pediatria",desc:"6 questões",qs:["q5","q6","q7","q8","q9","q10"],min:12},
+ {id:"gopre",nome:"Mini simulado: GO + Preventiva",desc:"5 questões",qs:["q11","q12","q13","q14","q15"],min:10}
+];
+const AVISOS=[
+ {id:"a1",t:"Bem-vindo(a) à MedRise!",d:"Comece pelo seu perfil: escolha a especialidade e as bancas. A plataforma inteira se organiza a partir disso.",dt:"Hoje"},
+ {id:"a2",t:"Dossiês em produção",d:"Os dossiês por instituição estão sendo montados a partir das provas oficiais e revisados por médicos. O Dossiê Modelo mostra como cada um vai ficar.",dt:"Hoje"},
+ {id:"a3",t:"Simulados liberados",d:"O Simulado Geral e os mini simulados por área já estão disponíveis, com cronômetro, correção e ranking.",dt:"Hoje"}
+];
+
+/* ================= STATE ================= */
+const KEY="medrise_v1";
+let S;
+function blank(){return {user:null,ans:{},saved:[],sims:[],hl:{},notes:[],cards:{},read:[],plan:{done:{}}};}
+function load(){try{const r=localStorage.getItem(KEY);S=r?Object.assign(blank(),JSON.parse(r)):blank();}catch(e){S=blank();}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+load();
+let ob={step:0,nome:"",tipo:"R1",esp:"",bancas:[],data:"",horas:20,fase:"Internato"};
+let qf={area:"",tema:"",status:"",idx:0};
+let qview={sel:null,show:false,tutor:false,cut:{}};
+let run=null; // simulado em andamento
+let flash={i:0,flip:false};
+
+/* ================= HELPERS ================= */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const L="ABCDE";
+function toast(m){const t=$("#toast");t.textContent=m;t.style.display="block";clearTimeout(toast._t);toast._t=setTimeout(()=>t.style.display="none",2200);}
+function qById(id){return Q.find(q=>q.id===id);}
+function stats(filterArea){
+  let tot=0,ok=0;const by={};AREAS.forEach(a=>by[a]={t:0,o:0});const byTema={};
+  Object.entries(S.ans).forEach(([id,r])=>{const q=qById(id);if(!q)return;if(filterArea&&q.area!==filterArea)return;
+    tot++;if(r.ok)ok++;by[q.area].t++;if(r.ok)by[q.area].o++;
+    byTema[q.tema]=byTema[q.tema]||{t:0,o:0,area:q.area};byTema[q.tema].t++;if(r.ok)byTema[q.tema].o++;});
+  return {tot,ok,err:tot-ok,pct:tot?Math.round(ok/tot*100):0,by,byTema};
+}
+function daysTo(d){if(!d)return null;const t=new Date(d+"T00:00:00");const n=new Date();n.setHours(0,0,0,0);return Math.round((t-n)/864e5);}
+function fmtDate(d){if(!d)return"";const [y,m,dd]=d.split("-");return dd+"/"+m+"/"+y;}
+function rankPos(){const s=stats();const base=1240;const p=Math.max(1,Math.round(base*(1-(s.pct/100)*0.92)-s.tot*3));return s.tot?p:null;}
+
+/* ================= CHARTS ================= */
+function barChart(items,opt){ // items [{label,value,max?,color}]
+  opt=opt||{};const W=640,H=opt.h||220,pl=34,pb=38,pt=14,pr=10;const n=items.length||1;
+  const max=opt.max||Math.max(1,...items.map(i=>i.value));const bw=Math.min(46,(W-pl-pr)/n*0.6);
+  let s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(opt.label||"Gráfico de barras")+'">';
+  for(let k=0;k<=4;k++){const y=pt+(H-pt-pb)*(1-k/4);const v=Math.round(max*k/4);s+='<line x1="'+pl+'" x2="'+(W-pr)+'" y1="'+y+'" y2="'+y+'" stroke="#E3EEEC"/><text x="'+(pl-6)+'" y="'+(y+4)+'" text-anchor="end">'+v+(opt.unit||"")+'</text>';}
+  items.forEach((it,i)=>{const cx=pl+(W-pl-pr)*(i+0.5)/n;const h=(H-pt-pb)*(it.value/max);const y=H-pb-h;
+    s+='<rect x="'+(cx-bw/2)+'" y="'+y+'" width="'+bw+'" height="'+Math.max(h,1)+'" rx="5" fill="'+(it.color||"#0FA3A3")+'"><title>'+esc(it.label)+': '+it.value+(opt.unit||"")+'</title></rect>';
+    s+='<text x="'+cx+'" y="'+(y-5)+'" text-anchor="middle" style="fill:#06343F;font-weight:600">'+it.value+(opt.unit||"")+'</text>';
+    s+='<text x="'+cx+'" y="'+(H-pb+16)+'" text-anchor="middle">'+esc(it.short||it.label)+'</text>';});
+  return s+'</svg>';
+}
+function lineChart(pts,opt){ // pts [{label,value}]
+  opt=opt||{};const W=640,H=opt.h||220,pl=34,pb=34,pt=16,pr=16;const max=opt.max||100;
+  let s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(opt.label||"Gráfico de linha")+'">';
+  for(let k=0;k<=4;k++){const y=pt+(H-pt-pb)*(1-k/4);s+='<line x1="'+pl+'" x2="'+(W-pr)+'" y1="'+y+'" y2="'+y+'" stroke="#E3EEEC"/><text x="'+(pl-6)+'" y="'+(y+4)+'" text-anchor="end">'+Math.round(max*k/4)+(opt.unit||"")+'</text>';}
+  if(opt.goal!=null){const y=pt+(H-pt-pb)*(1-opt.goal/max);s+='<line x1="'+pl+'" x2="'+(W-pr)+'" y1="'+y+'" y2="'+y+'" stroke="#C08A1E" stroke-dasharray="5 4"/><text x="'+(pl+6)+'" y="'+(y-6)+'" text-anchor="start" style="fill:#8A5A00;font-weight:600">'+esc(opt.goalLabel||"meta")+'</text>';}
+  const n=pts.length;if(!n)return s+'</svg>';
+  const xy=pts.map((p,i)=>[pl+(W-pl-pr)*(n===1?0.5:i/(n-1)),pt+(H-pt-pb)*(1-p.value/max)]);
+  s+='<path d="M'+xy.map(p=>p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' L')+'" fill="none" stroke="#0FA3A3" stroke-width="3" stroke-linejoin="round"/>';
+  xy.forEach((p,i)=>{s+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="5" fill="#fff" stroke="#06343F" stroke-width="2.5"><title>'+esc(pts[i].label)+': '+pts[i].value+(opt.unit||"")+'</title></circle><text x="'+p[0]+'" y="'+(H-pb+16)+'" text-anchor="middle">'+esc(pts[i].label)+'</text>';});
+  return s+'</svg>';
+}
+function donut(pct,color,size){size=size||120;const r=size/2-10,c=2*Math.PI*r;return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'" role="img" aria-label="'+pct+'%"><circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="#E5EFEE" stroke-width="12"/><circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="'+(color||"#0FA3A3")+'" stroke-width="12" stroke-linecap="round" stroke-dasharray="'+(c*pct/100)+' '+c+'" transform="rotate(-90 '+size/2+' '+size/2+')"/><text x="50%" y="54%" text-anchor="middle" style="font-family:Sora;font-weight:800;font-size:'+(size/5)+'px;fill:#06343F">'+pct+'%</text></svg>';}
+
+/* ================= LAYOUT ================= */
+const NAV=[
+ ["Estudo",[["inicio","Início","home"],["especialidade","Minha Especialidade","target"],["dossies","Dossiês da Banca","book"],["questoes","Banco de Questões","quiz"],["simulados","Simulados","timer"]]],
+ ["Planejamento",[["cronograma","Meu Cronograma","plan"],["calendario","Calendário de Provas","cal"],["desempenho","Desempenho","chart"]]],
+ ["Revisão",[["erros","Caderno de Erros","x"],["salvos","Salvos e Grifos","star"],["flashcards","Flashcards","cards"]]],
+ ["Comunidade",[["ranking","Ranking","trophy"],["avisos","Avisos","bell"],["perfil","Meu Perfil","user"],["home","Página inicial","home"]]]
+];
+function route(){return (location.hash||"#inicio").slice(1).split("/");}
+function shell(content){
+  const r=route()[0];const unread=AVISOS.filter(a=>!S.read.includes(a.id)).length;const errN=Object.values(S.ans).filter(a=>!a.ok).length;
+  let nav='';NAV.forEach(([sec,items])=>{nav+='<div class="nav-sec">'+sec+'</div><nav class="nav">';items.forEach(([id,lab,icn])=>{
+    let pill='';if(id==="avisos"&&unread)pill='<span class="pill">'+unread+'</span>';if(id==="erros"&&errN)pill='<span class="pill">'+errN+'</span>';
+    nav+='<a href="#'+id+'" class="'+((r===id||(r==="dossie"&&id==="dossies")||(r==="sim"&&id==="simulados")||(r==="res"&&id==="simulados"))?"on":"")+'">'+ic(icn)+lab+pill+'</a>';});nav+='</nav>';});
+  return '<div class="topbar">'+LOGO_FULL(34,true)+'<button data-act="menu" aria-label="Abrir menu">'+ic("menu")+'</button></div>'+
+   '<div class="app"><aside class="side" id="side"><div class="brand">'+LOGO_FULL(40,true)+'</div>'+nav+'</aside><main class="main" id="main">'+content+'</main></div>';
+}
+
+/* ================= ONBOARDING ================= */
+function vOnboard(){
+  const st=ob.step;const bars='<div class="steps">'+[0,1,2,3].map(i=>'<i class="'+(i<=st?"on":"")+'"></i>').join("")+'</div>';
+  let body='';
+  if(st===0){body='<h1>Vamos montar seu plano</h1><p class="sub">4 perguntas rápidas e a MedRise se organiza pra sua prova.</p>'+
+    '<label class="f" style="margin-top:18px">Como você quer ser chamado(a)?<input type="text" id="ob-nome" value="'+esc(ob.nome)+'" placeholder="Seu nome"></label>'+
+    '<div style="margin-top:18px"><div class="f" style="font-size:13px;font-weight:600;color:var(--ink2);margin-bottom:8px">Em que fase você está?</div><div class="chips">'+
+    ["Internato","Recém-formado(a)","Já sou residente"].map(x=>'<button class="chip '+(ob.fase===x?"on":"")+'" data-act="ob-fase" data-v="'+x+'">'+x+'</button>').join("")+'</div></div>';}
+  if(st===1){const list=ob.tipo==="R1"?ESPEC_R1:ESPEC_RMAIS.map(e=>e[0]);
+    body='<h1>Qual residência você quer?</h1><p class="sub">Isso define quais provas, temas e instituições aparecem pra você.</p>'+
+    '<div class="chips" style="margin:18px 0 8px">'+[["R1","Acesso direto (R1)"],["R+","Com pré-requisito (R2, R3…)"]].map(([v,l])=>'<button class="chip '+(ob.tipo===v?"on":"")+'" data-act="ob-tipo" data-v="'+v+'">'+l+'</button>').join("")+'</div>'+
+    '<p class="sub" style="margin:4px 0 12px">'+(ob.tipo==="R1"?"Prova de entrada: cobra Clínica, Cirurgia, Pediatria, GO e Preventiva.":"Pra quem já fez (ou está fazendo) uma residência pré-requisito e quer se especializar.")+'</p>'+
+    '<div class="chips">'+list.map(x=>'<button class="chip '+(ob.esp===x?"on":"")+'" data-act="ob-esp" data-v="'+esc(x)+'">'+esc(x)+'</button>').join("")+'</div>';}
+  if(st===2){body='<h1>Quais provas você vai fazer?</h1><p class="sub">Escolha quantas quiser. Dá pra mudar depois.</p><div class="chips" style="margin-top:18px">'+
+    BANCAS.map(b=>'<button class="chip '+(ob.bancas.includes(b)?"on":"")+'" data-act="ob-banca" data-v="'+b+'">'+b+'</button>').join("")+'</div>';}
+  if(st===3){body='<h1>Data e ritmo</h1><p class="sub">A gente usa isso pra montar seu cronograma automático.</p>'+
+    '<div class="grid g2" style="margin-top:18px"><label class="f">Data da sua primeira prova<input type="date" id="ob-data" value="'+ob.data+'"></label>'+
+    '<label class="f">Horas de estudo por semana<input type="number" id="ob-horas" min="2" max="80" value="'+ob.horas+'"></label></div>';}
+  const can=(st===0&&ob.nome.trim())||(st===1&&ob.esp)||(st===2&&ob.bancas.length)||st===3;
+  return '<div class="ob"><div style="margin-bottom:26px">'+LOGO_FULL(46)+'</div><div class="card" style="padding:28px">'+bars+body+
+   '<div style="display:flex;justify-content:space-between;margin-top:26px">'+(st?'<button class="btn ghost" data-act="ob-back">Voltar</button>':'<span></span>')+
+   '<button class="btn" data-act="ob-next" '+(can?"":"disabled")+'>'+(st===3?"Começar a estudar":"Continuar")+'</button></div></div></div>';
+}
+
+/* ================= VIEWS ================= */
+function vInicio(){
+  const u=S.user;const s=stats();const d=daysTo(u.data);const rp=rankPos();
+  const kp=[["quiz","Questões resolvidas",s.tot],["check","Acertos",s.ok],["chart","Aproveitamento",s.pct+"%"],["x","Questões erradas",s.err],["timer","Simulados feitos",S.sims.length],["trophy","Posição no ranking",rp?rp+"º":"—"]];
+  const areaItems=AREAS.map(a=>({label:a,short:a.split(" ")[0].replace("Ginecologia","GO").replace("Medicina","Preventiva"),value:s.by[a].t?Math.round(s.by[a].o/s.by[a].t*100):0,color:AREA_COLOR[a]}));
+  const fracos=Object.entries(s.byTema).filter(([,v])=>v.t&&v.o/v.t<0.6).slice(0,4);
+  const simPts=S.sims.slice(-8).map((x,i)=>({label:"S"+(S.sims.length-Math.min(8,S.sims.length)+i+1),value:Math.round(x.ok/x.total*100)}));
+  const unread=AVISOS.filter(a=>!S.read.includes(a.id));
+  return '<div class="head"><div><h1>Olá, '+esc(u.nome)+'</h1><p class="sub">'+esc(u.tipo==="R1"?"Rumo ao R1":"Rumo ao R+")+' em '+esc(u.esp)+' · '+u.bancas.map(esc).join(", ")+'</p></div><a class="btn" href="#questoes">Continuar estudando</a></div>'+
+  '<div class="grid g3" style="margin-bottom:16px"><div class="card hero" style="grid-column:span 2"><div class="row" style="justify-content:space-between;align-items:center"><div><div class="sub" style="font-weight:600;letter-spacing:.1em;text-transform:uppercase;font-size:12px">Sua prova</div><div style="font-size:18px;font-weight:600;margin-top:4px">'+(u.data?fmtDate(u.data):"Defina a data no perfil")+'</div><p class="sub" style="margin:6px 0 0">Meta da semana: '+Math.round(u.horas*6)+' questões · '+u.horas+'h de estudo</p></div><div style="text-align:right">'+(d!=null?'<div class="count">'+Math.max(d,0)+'</div><div class="sub">dias restantes</div>':"")+'</div></div></div>'+
+  '<div class="card" style="display:flex;align-items:center;gap:16px">'+donut(s.pct)+'<div><h3>Aproveitamento</h3><p class="sub" style="margin:4px 0 0">'+(s.tot?"Nas "+s.tot+" questões que você fez.":"Resolva questões pra ver seu índice.")+'</p></div></div></div>'+
+  '<div class="grid g6" style="margin-bottom:16px">'+kp.map(k=>'<div class="card pad-s kpi"><div class="ic">'+ic(k[0])+'</div><div class="v">'+k[2]+'</div><div class="l">'+k[1]+'</div></div>').join("")+'</div>'+
+  '<div class="grid g2" style="margin-bottom:16px"><div class="card chart"><h2>Acerto por grande área</h2><p class="sub" style="margin:4px 0 10px">Onde você está forte e onde precisa reforçar.</p>'+(s.tot?barChart(areaItems,{max:100,unit:"%",label:"Acerto por área"}):'<div class="empty">Resolva questões pra liberar este gráfico.</div>')+'</div>'+
+  '<div class="card chart"><h2>Evolução nos simulados</h2><p class="sub" style="margin:4px 0 10px">Nota de cada simulado, em %. A linha tracejada é uma referência de 70%.</p>'+(simPts.length?lineChart(simPts,{goal:70,goalLabel:"referência 70%",unit:"%",label:"Evolução"}):'<div class="empty">Faça seu primeiro simulado pra ver sua evolução. <br><a href="#simulados">Ir para simulados</a></div>')+'</div></div>'+
+  '<div class="grid g3"><div class="card"><h2>Temas pra reforçar</h2>'+(fracos.length?'<ul style="padding-left:18px;margin:10px 0 0">'+fracos.map(([t,v])=>'<li style="margin-bottom:6px"><b>'+esc(t)+'</b> <span class="sub">('+Math.round(v.o/v.t*100)+'% de acerto)</span></li>').join("")+'</ul><a class="btn sm ghost" style="margin-top:10px" href="#erros">Refazer erros</a>':'<p class="sub">Nenhum tema fraco ainda. Continue resolvendo questões.</p>')+'</div>'+
+  '<div class="card"><h2>Central MedRise</h2><div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">'+
+   [["dossies","Dossiês da Banca","book","O que cada banca mais cobra"],["simulados","Simulados","timer","Prova completa com cronômetro"],["cronograma","Meu Cronograma","plan","Plano semanal automático"]].map(t=>'<a class="tile" href="#'+t[0]+'"><span class="ic">'+ic(t[2])+'</span><span><b>'+t[1]+'</b><br><span class="sub">'+t[3]+'</span></span></a>').join("")+'</div></div>'+
+  '<div class="card"><h2>Avisos</h2>'+(unread.length?unread.slice(0,2).map(a=>'<div style="margin-top:12px"><b>'+esc(a.t)+'</b><p class="sub" style="margin:2px 0 0">'+esc(a.d)+'</p></div>').join(""):'<p class="sub">Nenhum aviso novo.</p>')+'<a class="btn sm ghost" style="margin-top:12px" href="#avisos">Ver todos</a></div></div>';
+}
+
+function vEspecialidade(){
+  const u=S.user;const isR1=u.tipo==="R1";
+  const pre=!isR1?(ESPEC_RMAIS.find(e=>e[0]===u.esp)||[,"—"])[1]:null;
+  const rows=u.bancas.concat(BANCAS.filter(b=>!u.bancas.includes(b)).slice(0,Math.max(0,6-u.bancas.length)));
+  return '<div class="head"><div><h1>Minha Especialidade</h1><p class="sub">'+esc(u.esp)+' · '+(isR1?"acesso direto (R1)":"com pré-requisito (R+)")+'</p></div><a class="btn ghost" href="#perfil">Trocar especialidade</a></div>'+
+  '<div class="grid g3" style="margin-bottom:16px"><div class="card"><div class="l sub" style="font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase">Tipo de acesso</div><h2 style="margin-top:6px">'+(isR1?"R1, acesso direto":"R+, entrada no R2/R3")+'</h2><p class="sub">'+(isR1?"Qualquer médico formado pode prestar. A prova cobra as 5 grandes áreas.":"Exige ter concluído a residência pré-requisito.")+'</p></div>'+
+  '<div class="card"><div class="sub" style="font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase">'+(isR1?"O que a prova cobra":"Pré-requisito")+'</div><h2 style="margin-top:6px">'+(isR1?"Clínica, Cirurgia, Pediatria, GO e Preventiva":esc(pre))+'</h2><p class="sub">'+(isR1?"Em geral, com peso parecido entre as áreas. Cada banca tem sua cara: veja no dossiê.":"A prova cobra a fundo a área do pré-requisito.")+'</p></div>'+
+  '<div class="card"><div class="sub" style="font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase">Suas provas</div><h2 style="margin-top:6px">'+u.bancas.length+' instituição(ões)</h2><p class="sub">'+u.bancas.map(esc).join(", ")+'</p></div></div>'+
+  '<div class="card" style="margin-bottom:16px"><div class="head" style="margin-bottom:10px"><div><h2>Melhores instituições para '+esc(u.esp)+'</h2><p class="sub">Vagas, concorrência e nota de corte dos últimos anos.</p></div></div>'+
+  '<div class="note" style="margin-bottom:12px">Os números entram aqui a partir dos editais e resultados oficiais de cada instituição. Por enquanto a tabela mostra a estrutura.</div>'+
+  '<div class="tbl-wrap"><table class="t"><thead><tr><th>Instituição</th><th>Vagas</th><th>Candidatos/vaga</th><th>Nota de corte</th><th>Prova</th><th></th></tr></thead><tbody>'+
+  rows.map(b=>'<tr><td><b>'+esc(b)+'</b>'+(u.bancas.includes(b)?' <span class="tag">sua prova</span>':'')+'</td><td>[a preencher]</td><td>[a preencher]</td><td>[a preencher]</td><td>[data do edital]</td><td><a href="#dossie/'+b.toLowerCase()+'">Ver dossiê</a></td></tr>').join("")+'</tbody></table></div></div>'+
+  '<div class="card"><h2>Outras especialidades</h2><div class="grid g2" style="margin-top:12px"><div><h3>Acesso direto (R1)</h3><p class="sub">'+ESPEC_R1.filter(e=>e!=="Ainda não sei").map(esc).join(" · ")+'</p></div><div><h3>Com pré-requisito (R+)</h3><div class="tbl-wrap"><table class="t"><tbody>'+ESPEC_RMAIS.map(e=>'<tr><td>'+esc(e[0])+'</td><td class="sub">pré-req.: '+esc(e[1])+'</td></tr>').join("")+'</tbody></table></div></div></div></div>';
+}
+
+function vDossies(){
+  const mine=S.user.bancas;const list=DOSSIES.slice().sort((a,b)=>(mine.includes(b.inst)?1:0)-(mine.includes(a.inst)?1:0));
+  return '<div class="head"><div><h1>Dossiês da Banca</h1><p class="sub">Tudo que cada instituição já cobrou: temas mais frequentes, resumo de alto rendimento e checklist da véspera.</p></div></div>'+
+  '<div class="grid g3">'+list.map(d=>'<a class="card tile" href="#dossie/'+d.id+'" style="flex-direction:column;gap:10px"><div class="row" style="justify-content:space-between;width:100%;align-items:center"><span class="ic">'+ic("book")+'</span>'+(d.status==="demo"?'<span class="tag ok">Disponível</span>':'<span class="tag warn">Em produção</span>')+'</div><div><h3>'+esc(d.nome)+'</h3><p class="sub" style="margin:4px 0 0">'+esc(d.inst)+(mine.includes(d.inst)?' · <b style="color:var(--teal-d)">sua prova</b>':'')+'</p></div><span class="sub" style="font-size:13px">Provas analisadas: '+d.anos+'</span></a>').join("")+'</div>';
+}
+
+const DOSS_HTML='<h2 id="d-raio">1. Raio-X da banca</h2><p>Cada dossiê começa com a distribuição das questões por grande área e os temas que mais se repetem. Com isso você vê para onde a banca puxa e onde vale gastar mais tempo.</p><div class="chart card" id="d-chart"></div><p class="sub" style="font-size:13px">Dados ilustrativos no Dossiê Modelo. Nos dossiês reais, a contagem vem das provas oficiais de 2022 a 2026.</p>'+
+'<h2 id="d-top">2. Temas mais cobrados</h2><ol><li><b>Diabetes mellitus</b>: diagnóstico e metas de tratamento</li><li><b>Síndromes hipertensivas da gestação</b>: critérios e conduta</li><li><b>Abdome agudo inflamatório</b>: apendicite e colecistite</li><li><b>Doenças respiratórias na infância</b>: bronquiolite e pneumonia</li><li><b>Testes diagnósticos</b>: sensibilidade, especificidade e valores preditivos</li></ol>'+
+'<h2 id="d-resumo">3. Resumo de alto rendimento</h2><h3>Diabetes mellitus: diagnóstico</h3><p>O diagnóstico exige dois exames alterados, que podem ser iguais ou diferentes. A exceção é a glicemia ao acaso de 200 mg/dL ou mais com sintomas clássicos, que basta sozinha.</p><div class="box"><b>Valores que caem:</b> glicemia de jejum ≥ 126 mg/dL · HbA1c ≥ 6,5% · TOTG 2 h ≥ 200 mg/dL. Pré-diabetes: jejum 100–125, HbA1c 5,7–6,4%, TOTG 140–199.</div>'+
+'<h3>Pré-eclâmpsia</h3><p>É a PA de 140 x 90 mmHg ou mais após 20 semanas, com proteinúria (300 mg/24 h ou mais, ou relação proteína/creatinina de 0,3 ou mais) ou sinal de lesão de órgão-alvo. Os sinais de gravidade incluem PA de 160 x 110 ou mais, plaquetas abaixo de 100 mil, sintomas neurológicos, dor epigástrica e alteração de função hepática ou renal.</p><div class="box"><b>Conduta:</b> sulfato de magnésio para prevenir convulsão, anti-hipertensivo de ação rápida (hidralazina ou nifedipina) na crise e programação do parto conforme a gravidade e a idade gestacional.</div>'+
+'<h3>Apendicite aguda</h3><p>A dor começa periumbilical e migra para a fossa ilíaca direita, com anorexia, náuseas e febre baixa. O diagnóstico é clínico. Sinais clássicos: Blumberg, Rovsing, psoas e obturador. Na dúvida, o adulto faz tomografia; a criança e a gestante fazem ultrassom.</p>'+
+'<h3>Testes diagnósticos</h3><p>Sensibilidade e especificidade são do teste e não mudam com a prevalência. Os valores preditivos mudam: com prevalência maior, o VPP sobe e o VPN cai.</p>'+
+'<h2 id="d-relampago">4. Questão relâmpago</h2><div class="box"><b>Pergunta:</b> qual a principal causa de hemorragia pós-parto?<br><b>Resposta:</b> atonia uterina (o "Tônus" dos 4 Ts).</div>'+
+'<h2 id="d-nao">5. O que a banca não costuma cobrar</h2><p>Nos dossiês reais, aqui entra a lista de temas que não apareceram nas provas analisadas. Serve para você não perder tempo com o que tem pouca chance de cair.</p>'+
+'<h2 id="d-vespera">6. Checklist da véspera</h2><ul><li>Diabetes: 2 exames alterados confirmam (exceto acaso ≥ 200 com sintomas)</li><li>HAS: primeira linha é tiazídico, IECA/BRA ou BCC</li><li>Eclâmpsia: sulfato de magnésio; antídoto, gluconato de cálcio</li><li>ATLS: A (via aérea + coluna cervical) vem primeiro</li><li>Coorte parte da exposição; caso-controle parte do desfecho</li></ul>';
+
+function vDossie(id){
+  const d=DOSSIES.find(x=>x.id===id)||DOSSIES[0];
+  if(d.status!=="demo"){return '<a href="#dossies" class="sub">← Dossiês</a><div class="head" style="margin-top:8px"><div><h1>'+esc(d.nome)+'</h1><p class="sub">'+esc(d.inst)+'</p></div></div><div class="card"><span class="tag warn">Em produção</span><h2 style="margin-top:10px">Este dossiê está sendo montado</h2><p class="sub">Estamos analisando as provas oficiais de '+esc(d.inst)+' de '+d.anos+' e um médico revisa tudo antes de publicar. Enquanto isso, veja o <a href="#dossie/modelo">Dossiê Modelo</a> pra conhecer o formato.</p></div>';}
+  const html=S.hl[d.id]||DOSS_HTML;
+  return '<a href="#dossies" class="sub">← Dossiês</a><div class="head" style="margin-top:8px"><div><h1>'+esc(d.nome)+'</h1><p class="sub">Selecione qualquer trecho pra grifar em 3 cores ou anotar. Tudo fica salvo em "Salvos e Grifos".</p></div><div class="row"><button class="btn ghost sm" data-act="hl-clear" data-id="'+d.id+'">Limpar grifos</button><a class="btn sm" href="#questoes">Fazer questões destes temas</a></div></div>'+
+  '<div class="row" style="align-items:flex-start;flex-wrap:nowrap;gap:28px"><article class="card doss" id="doss" data-id="'+d.id+'" style="flex:1;min-width:0">'+html+'</article>'+
+  '<aside style="width:220px;flex:none;position:sticky;top:20px" class="toc card pad-s"><b>Neste dossiê</b>'+[["d-raio","Raio-X da banca"],["d-top","Temas mais cobrados"],["d-resumo","Resumo"],["d-relampago","Questão relâmpago"],["d-nao","O que não cai"],["d-vespera","Checklist da véspera"]].map(x=>'<a href="javascript:void(0)" data-act="goto" data-v="'+x[0]+'">'+x[1]+'</a>').join("")+'</aside></div>';
+}
+function afterDossie(){
+  const c=document.getElementById("d-chart");if(c){c.innerHTML='<h3 style="margin-bottom:8px">Questões por área (ilustrativo)</h3>'+barChart([{label:"Clínica",value:24,color:AREA_COLOR["Clínica Médica"]},{label:"Cirurgia",value:20,color:AREA_COLOR["Cirurgia"]},{label:"Pediatria",value:19,color:AREA_COLOR["Pediatria"]},{label:"GO",value:20,color:AREA_COLOR["Ginecologia e Obstetrícia"]},{label:"Preventiva",value:17,color:AREA_COLOR["Medicina Preventiva"]}],{unit:"%",max:40,h:200,label:"Questões por área"});}
+}
+
+function filteredQ(){return Q.filter(q=>(!qf.area||q.area===qf.area)&&(!qf.tema||q.tema===qf.tema)&&(!qf.status||(qf.status==="nao"&&!S.ans[q.id])||(qf.status==="erradas"&&S.ans[q.id]&&!S.ans[q.id].ok)||(qf.status==="certas"&&S.ans[q.id]&&S.ans[q.id].ok)||(qf.status==="salvas"&&S.saved.includes(q.id))));}
+function qCard(q,mode){ // mode: 'bank' | 'sim'
+  const ans=mode==="bank"?S.ans[q.id]:null;const show=mode==="bank"&&qview.show;
+  const sel=mode==="sim"?run.ans[q.id]:qview.sel;
+  let alts=q.a.map((t,i)=>{let cl="alt";if(show){if(i===q.c)cl+=" right";else if(i===sel)cl+=" wrong";}else if(sel===i)cl+=" sel";if(!show&&qview.cut[q.id+"_"+i])cl+=" cut";
+    return '<button class="'+cl+'" data-act="'+(mode==="sim"?"sim-pick":"pick")+'" data-i="'+i+'"><span class="lt">'+L[i]+'</span><span>'+esc(t)+'</span></button>';}).join("");
+  let foot='';
+  if(mode==="bank"){
+    foot='<div class="row" style="margin-top:8px;justify-content:space-between"><div class="row" style="gap:8px">'+(!show?'<button class="btn" data-act="answer" '+(sel==null?"disabled":"")+'>Responder</button>':'')+
+      '<button class="btn ghost" data-act="save-q" data-id="'+q.id+'">'+(S.saved.includes(q.id)?"★ Salva":"☆ Salvar")+'</button></div><div class="row" style="gap:8px"><button class="btn ghost" data-act="q-prev">Anterior</button><button class="btn dark" data-act="q-next">Próxima</button></div></div>';
+    if(show){foot+='<div class="coment"><div class="row" style="align-items:center;gap:10px">'+(sel===q.c?'<span class="tag ok">Você acertou</span>':'<span class="tag bad">Resposta correta: '+L[q.c]+'</span>')+'<b>Comentário</b></div><p style="margin:10px 0 0">'+esc(q.com)+'</p>'+
+      '<div class="resumo"><table><thead><tr>'+q.tab[0].map(h=>'<th>'+esc(h)+'</th>').join("")+'</tr></thead><tbody>'+q.tab.slice(1).map(r=>'<tr>'+r.map(c=>'<td>'+esc(c)+'</td>').join("")+'</tr>').join("")+'</tbody></table></div>'+
+      (qview.tutor?'<div class="tutor"><b style="display:flex;gap:8px;align-items:center">'+ic("bot").replace('aria-hidden="true"','aria-hidden="true" width="18" height="18"')+'Tutor MedRise</b><p style="margin:8px 0 0">'+esc(q.tut)+'</p></div>':'<button class="btn ghost" style="margin-top:12px" data-act="tutor">'+ic("bot").replace('<svg','<svg width="18" height="18"')+'Não entendi, me explica de outro jeito</button>')+'</div>';}
+  }
+  return '<div class="card"><div class="row" style="gap:8px;align-items:center"><span class="tag" style="background:'+AREA_COLOR[q.area]+'1A;color:'+AREA_COLOR[q.area]+'">'+esc(q.area)+'</span><span class="tag gray">'+esc(q.tema)+'</span><span class="tag gray">'+q.dif+'</span><span class="tag warn">Questão de exemplo</span></div>'+
+   '<p class="q-enun">'+esc(q.e)+'</p>'+alts+(mode==="bank"&&!show?'<p class="sub" style="font-size:12px;margin:4px 0 0">Dica: clique com o botão direito numa alternativa pra riscá-la.</p>':'')+foot+'</div>';
+}
+function vQuestoes(){
+  const list=filteredQ();if(qf.idx>=list.length)qf.idx=0;const q=list[qf.idx];
+  const temas=[...new Set(Q.filter(x=>!qf.area||x.area===qf.area).map(x=>x.tema))];
+  const s=stats();
+  return '<div class="head"><div><h1>Banco de Questões</h1><p class="sub">Filtre por área, tema e status. Cada questão tem comentário com tabela-resumo e o Tutor MedRise.</p></div><div class="sub">'+s.tot+' respondidas · '+s.pct+'% de acerto</div></div>'+
+  '<div class="note" style="margin-bottom:14px">As questões abaixo são exemplos escritos pra demonstrar o formato. As questões reais entram a partir das provas oficiais de cada banca, com filtro por instituição e ano.</div>'+
+  '<div class="card pad-s" style="margin-bottom:16px"><div class="grid g4"><label class="f">Grande área<select data-f="area"><option value="">Todas</option>'+AREAS.map(a=>'<option '+(qf.area===a?"selected":"")+'>'+a+'</option>').join("")+'</select></label>'+
+  '<label class="f">Tema<select data-f="tema"><option value="">Todos</option>'+temas.map(t=>'<option '+(qf.tema===t?"selected":"")+'>'+esc(t)+'</option>').join("")+'</select></label>'+
+  '<label class="f">Status<select data-f="status">'+[["","Todas"],["nao","Não respondidas"],["erradas","Erradas"],["certas","Certas"],["salvas","Salvas"]].map(([v,l])=>'<option value="'+v+'" '+(qf.status===v?"selected":"")+'>'+l+'</option>').join("")+'</select></label>'+
+  '<label class="f">Banca<select disabled><option>Provas oficiais em breve</option></select></label></div></div>'+
+  (q?'<div class="sub" style="margin-bottom:8px">Questão '+(qf.idx+1)+' de '+list.length+'</div>'+qCard(q,"bank"):'<div class="empty">Nenhuma questão com esses filtros.</div>');
+}
+
+function vSimulados(){
+  return '<div class="head"><div><h1>Simulados</h1><p class="sub">Prova com cronômetro, gabarito no final, nota por área e ranking anônimo.</p></div></div>'+
+  '<div class="grid g2" style="margin-bottom:22px">'+SIMULADOS.map(s=>{const done=S.sims.filter(x=>x.sid===s.id);const best=done.length?Math.max(...done.map(x=>Math.round(x.ok/x.total*100))):null;
+   return '<div class="card"><div class="row" style="justify-content:space-between;align-items:center"><span class="tag">'+s.qs.length+' questões · '+s.min+' min</span>'+(best!=null?'<span class="tag ok">Melhor nota: '+best+'%</span>':'')+'</div><h2 style="margin-top:10px">'+esc(s.nome)+'</h2><p class="sub">'+esc(s.desc)+'</p><button class="btn" data-act="sim-start" data-id="'+s.id+'">'+(done.length?"Refazer":"Começar")+'</button></div>';}).join("")+'</div>'+
+  '<div class="card"><h2>Histórico</h2>'+(S.sims.length?'<div class="tbl-wrap"><table class="t" style="margin-top:8px"><thead><tr><th>Simulado</th><th>Data</th><th>Acertos</th><th>Nota</th><th>Tempo</th><th></th></tr></thead><tbody>'+S.sims.map((x,i)=>'<tr><td>'+esc(x.nome)+'</td><td>'+x.dt+'</td><td>'+x.ok+'/'+x.total+'</td><td><b>'+Math.round(x.ok/x.total*100)+'%</b></td><td>'+Math.round(x.secs/60)+' min</td><td><a href="#res/'+i+'">Ver resultado</a></td></tr>').reverse().join("")+'</tbody></table></div>':'<p class="sub">Você ainda não fez nenhum simulado.</p>')+'</div>';
+}
+function vSim(){
+  if(!run)return '<div class="empty">Nenhum simulado em andamento. <a href="#simulados">Escolher simulado</a></div>';
+  const q=qById(run.qs[run.i]);const left=Math.max(0,run.end-Date.now());const mm=String(Math.floor(left/60000)).padStart(2,"0"),ss=String(Math.floor(left/1000)%60).padStart(2,"0");
+  const answered=Object.keys(run.ans).length;
+  return '<div class="head"><div><h1>'+esc(run.nome)+'</h1><p class="sub">'+answered+' de '+run.qs.length+' respondidas</p></div><div class="row" style="align-items:center"><span class="timer" id="timer" aria-live="off">'+mm+':'+ss+'</span><button class="btn dark" data-act="sim-finish">Entregar prova</button></div></div>'+
+  '<div class="row" style="align-items:flex-start;gap:16px"><div style="flex:999 1 520px;min-width:0"><div class="sub" style="margin-bottom:8px">Questão '+(run.i+1)+' de '+run.qs.length+'</div>'+qCard(q,"sim")+
+  '<div class="row" style="justify-content:space-between;margin-top:12px"><button class="btn ghost" data-act="sim-prev" '+(run.i===0?"disabled":"")+'>Anterior</button><button class="btn" data-act="sim-next" '+(run.i===run.qs.length-1?"disabled":"")+'>Próxima</button></div></div>'+
+  '<div class="card pad-s" style="flex:1 1 220px"><b>Mapa da prova</b><div class="qnav" style="margin-top:10px">'+run.qs.map((id,i)=>'<button class="'+(i===run.i?"cur":(run.ans[id]!=null?"done":""))+'" data-act="sim-go" data-i="'+i+'" aria-label="Ir para questão '+(i+1)+'">'+(i+1)+'</button>').join("")+'</div></div></div>';
+}
+function vRes(i){
+  const r=S.sims[+i];if(!r)return '<div class="empty">Resultado não encontrado.</div>';
+  const pct=Math.round(r.ok/r.total*100);const items=AREAS.filter(a=>r.by[a]&&r.by[a].t).map(a=>({label:a,short:a.split(" ")[0].replace("Ginecologia","GO").replace("Medicina","Preventiva"),value:Math.round(r.by[a].o/r.by[a].t*100),color:AREA_COLOR[a]}));
+  const pos=Math.max(1,Math.round(320*(1-pct/100*0.95)));
+  return '<a href="#simulados" class="sub">← Simulados</a><div class="head" style="margin-top:8px"><div><h1>Resultado: '+esc(r.nome)+'</h1><p class="sub">'+r.dt+' · '+Math.round(r.secs/60)+' min</p></div></div>'+
+  '<div class="grid g3" style="margin-bottom:16px"><div class="card" style="display:flex;gap:16px;align-items:center">'+donut(pct)+'<div><h2>'+r.ok+' de '+r.total+'</h2><p class="sub">acertos</p></div></div>'+
+  '<div class="card kpi"><div class="ic">'+ic("trophy")+'</div><div class="v">'+pos+'º</div><div class="l">Posição (ranking demonstrativo)</div></div>'+
+  '<div class="card kpi"><div class="ic">'+ic("x")+'</div><div class="v">'+(r.total-r.ok)+'</div><div class="l">Erros, já no seu caderno</div></div></div>'+
+  '<div class="card chart" style="margin-bottom:16px"><h2>Nota por área</h2>'+barChart(items,{max:100,unit:"%",label:"Nota por área"})+'</div>'+
+  '<div class="card"><h2>Gabarito comentado</h2>'+r.qs.map((id,k)=>{const q=qById(id);const a=r.ans[id];const ok=a===q.c;return '<details style="border-top:1px solid var(--line);padding:12px 0"><summary style="cursor:pointer;display:flex;gap:10px;align-items:center"><span class="tag '+(ok?"ok":"bad")+'">'+(k+1)+' · '+(ok?"Certa":"Errada")+'</span><span>'+esc(q.tema)+'</span><span class="sub">Sua: '+(a!=null?L[a]:"—")+' · Gabarito: '+L[q.c]+'</span></summary><p>'+esc(q.e)+'</p><p><b>Comentário:</b> '+esc(q.com)+'</p></details>';}).join("")+'</div>';
+}
+
+function vCalendario(){
+  const u=S.user;const d=daysTo(u.data);
+  return '<div class="head"><div><h1>Calendário de Provas</h1><p class="sub">Datas de inscrição e prova das residências que você escolheu.</p></div></div>'+
+  (u.data?'<div class="card hero" style="margin-bottom:16px"><div class="row" style="justify-content:space-between;align-items:center"><div><div class="sub" style="text-transform:uppercase;letter-spacing:.1em;font-size:12px;font-weight:600">Sua próxima prova</div><h2 style="color:#fff;margin-top:4px">'+fmtDate(u.data)+'</h2></div><div style="text-align:right"><div class="count">'+Math.max(d,0)+'</div><div class="sub">dias</div></div></div></div>':'')+
+  '<div class="note" style="margin-bottom:12px">As datas oficiais entram aqui assim que cada edital é publicado. Você recebe um lembrete por e-mail quando abrir a inscrição.</div>'+
+  '<div class="card"><div class="tbl-wrap"><table class="t"><thead><tr><th>Instituição</th><th>Inscrições</th><th>Prova</th><th>Status</th><th>Lembrete</th></tr></thead><tbody>'+
+  BANCAS.map(b=>{const mine=u.bancas.includes(b);return '<tr><td><b>'+esc(b)+'</b>'+(mine?' <span class="tag">sua prova</span>':'')+'</td><td>[edital]</td><td>[edital]</td><td><span class="tag gray">Aguardando edital</span></td><td><button class="btn sm '+(mine?"":"ghost")+'" data-act="lembrete" data-v="'+b+'">'+(mine?"Ativo":"Ativar")+'</button></td></tr>';}).join("")+'</tbody></table></div></div>';
+}
+
+function buildPlan(){
+  const u=S.user;const s=stats();const d=daysTo(u.data);const weeks=Math.max(1,Math.min(12,d!=null&&d>0?Math.ceil(d/7):8));
+  const weight={};AREAS.forEach(a=>{const b=s.by[a];const acc=b.t?b.o/b.t:0.5;weight[a]=1+(1-acc);});
+  const tw=AREAS.reduce((x,a)=>x+weight[a],0);
+  const temasPorArea={};Q.forEach(q=>{(temasPorArea[q.area]=temasPorArea[q.area]||[]);if(!temasPorArea[q.area].includes(q.tema))temasPorArea[q.area].push(q.tema);});
+  const plan=[];for(let w=0;w<weeks;w++){const items=AREAS.map(a=>{const h=Math.max(1,Math.round(u.horas*weight[a]/tw));const ts=temasPorArea[a];return {area:a,h,tema:ts[w%ts.length]};});
+    plan.push({w:w+1,items,rev:w%2===1,sim:w%2===1});}
+  return {weeks,plan,weight,tw};
+}
+function vCronograma(){
+  const u=S.user;const P=buildPlan();
+  return '<div class="head"><div><h1>Meu Cronograma</h1><p class="sub">Montado automaticamente com base na data da prova, nas suas '+u.horas+'h por semana e no seu desempenho. Áreas em que você erra mais ganham mais horas.</p></div><a class="btn ghost" href="#perfil">Ajustar horas e data</a></div>'+
+  '<div class="card chart" style="margin-bottom:16px"><h2>Divisão das suas horas por área</h2>'+barChart(AREAS.map(a=>({label:a,short:a.split(" ")[0].replace("Ginecologia","GO").replace("Medicina","Preventiva"),value:Math.max(1,Math.round(u.horas*P.weight[a]/P.tw)),color:AREA_COLOR[a]})),{unit:"h",label:"Horas por área"})+'</div>'+
+  P.plan.map(p=>'<div class="card" style="margin-bottom:12px"><div class="row" style="justify-content:space-between;align-items:center"><h2>Semana '+p.w+'</h2>'+(p.sim?'<span class="tag">Inclui simulado</span>':'')+'</div><div class="tbl-wrap"><table class="t" style="margin-top:8px"><tbody>'+
+   p.items.map((it,k)=>{const key=p.w+"_"+k;const done=S.plan.done[key];return '<tr><td style="width:44px"><input type="checkbox" aria-label="Marcar como feito" data-act="plan-done" data-k="'+key+'" '+(done?"checked":"")+' style="width:20px;height:20px"></td><td><b style="color:'+AREA_COLOR[it.area]+'">'+esc(it.area)+'</b><br><span class="sub">'+esc(it.tema)+'</span></td><td>'+it.h+'h</td><td>'+Math.round(it.h*6)+' questões</td></tr>';}).join("")+
+   (p.rev?'<tr><td></td><td><b>Revisão</b><br><span class="sub">Caderno de erros + flashcards</span></td><td>—</td><td>—</td></tr>':'')+'</tbody></table></div></div>').join("");
+}
+
+function vDesempenho(){
+  const s=stats();const areaItems=AREAS.map(a=>({label:a,short:a.split(" ")[0].replace("Ginecologia","GO").replace("Medicina","Preventiva"),value:s.by[a].t?Math.round(s.by[a].o/s.by[a].t*100):0,color:AREA_COLOR[a]}));
+  const temas=Object.entries(s.byTema).sort((a,b)=>a[1].o/a[1].t-b[1].o/b[1].t);
+  return '<div class="head"><div><h1>Desempenho</h1><p class="sub">Seu aproveitamento por área, por tema e nos simulados.</p></div></div>'+
+  (s.tot?'<div class="grid g2" style="margin-bottom:16px"><div class="card chart"><h2>Acerto por área</h2>'+barChart(areaItems,{max:100,unit:"%",label:"Acerto por área"})+'</div><div class="card chart"><h2>Questões feitas por área</h2>'+barChart(AREAS.map(a=>({label:a,short:a.split(" ")[0].replace("Ginecologia","GO").replace("Medicina","Preventiva"),value:s.by[a].t,color:AREA_COLOR[a]})),{label:"Questões por área"})+'</div></div>'+
+  '<div class="card"><h2>Por tema</h2><div class="tbl-wrap"><table class="t" style="margin-top:8px"><thead><tr><th>Tema</th><th>Área</th><th>Feitas</th><th style="width:40%">Acerto</th></tr></thead><tbody>'+temas.map(([t,v])=>{const p=Math.round(v.o/v.t*100);return '<tr><td><b>'+esc(t)+'</b></td><td class="sub">'+esc(v.area)+'</td><td>'+v.t+'</td><td><div class="row" style="align-items:center;gap:10px;flex-wrap:nowrap"><div class="bar-h" style="flex:1"><i style="width:'+p+'%;background:'+(p<60?"var(--bad)":"var(--teal)")+'"></i></div><b>'+p+'%</b></div></td></tr>';}).join("")+'</tbody></table></div></div>':'<div class="empty">Resolva questões ou faça um simulado pra ver seu desempenho. <br><a href="#questoes">Ir para o banco de questões</a></div>');
+}
+
+function vErros(){
+  const errs=Object.entries(S.ans).filter(([,r])=>!r.ok).map(([id])=>qById(id)).filter(Boolean);
+  const by={};errs.forEach(q=>{(by[q.tema]=by[q.tema]||[]).push(q);});
+  return '<div class="head"><div><h1>Caderno de Erros</h1><p class="sub">Toda questão que você erra, no banco ou em simulado, vem pra cá, agrupada por tema.</p></div>'+(errs.length?'<button class="btn" data-act="redo-errs">Refazer todas as erradas</button>':'')+'</div>'+
+  (errs.length?Object.entries(by).map(([t,qs])=>'<div class="card" style="margin-bottom:12px"><div class="row" style="justify-content:space-between;align-items:center"><h2>'+esc(t)+'</h2><span class="tag bad">'+qs.length+' erro(s)</span></div>'+qs.map(q=>'<p style="margin:10px 0 0">'+esc(q.e.slice(0,140))+'…</p><p class="sub" style="margin:4px 0 0">Gabarito: '+L[q.c]+' · '+esc(q.a[q.c])+'</p>').join("")+'</div>').join(""):'<div class="empty">Nenhum erro por enquanto.</div>');
+}
+function vSalvos(){
+  const qs=S.saved.map(qById).filter(Boolean);
+  return '<div class="head"><div><h1>Salvos e Grifos</h1><p class="sub">Questões que você salvou e trechos grifados ou anotados nos dossiês.</p></div></div>'+
+  '<div class="grid g2"><div class="card"><h2>Questões salvas</h2>'+(qs.length?qs.map(q=>'<div style="border-top:1px solid var(--line);padding:10px 0;margin-top:8px"><span class="tag gray">'+esc(q.tema)+'</span><p style="margin:6px 0 0">'+esc(q.e.slice(0,130))+'…</p></div>').join(""):'<p class="sub">Nenhuma questão salva.</p>')+'</div>'+
+  '<div class="card"><h2>Grifos e notas</h2>'+(S.notes.length?S.notes.slice().reverse().map(n=>'<div style="border-top:1px solid var(--line);padding:10px 0;margin-top:8px"><mark class="'+n.c+'">'+esc(n.txt)+'</mark>'+(n.nota?'<p class="sub" style="margin:6px 0 0">Nota: '+esc(n.nota)+'</p>':'')+'<p class="sub" style="margin:4px 0 0;font-size:12px">'+esc(n.doss)+'</p></div>').join(""):'<p class="sub">Selecione um trecho em qualquer dossiê pra grifar.</p>')+'</div></div>';
+}
+function dueCards(){const now=Date.now();return Q.filter(q=>{const c=S.cards[q.id];return !c||c.due<=now;});}
+function vFlash(){
+  const due=dueCards();if(flash.i>=due.length)flash.i=0;const q=due[flash.i];
+  return '<div class="head"><div><h1>Flashcards</h1><p class="sub">Revisão espaçada: o que você acha difícil volta antes, o que é fácil volta depois.</p></div><span class="tag">'+due.length+' pra revisar hoje</span></div>'+
+  (q?'<div class="card flash" data-act="flip" role="button" tabindex="0">'+(flash.flip?'<div><div class="sub" style="font-size:13px;margin-bottom:8px">Resposta</div><b>'+esc(q.a[q.c])+'</b><p class="sub" style="font-size:15px;margin-top:10px">'+esc(q.com)+'</p></div>':'<div><div class="sub" style="font-size:13px;margin-bottom:8px">'+esc(q.tema)+' · toque pra virar</div>'+esc(q.e)+'</div>')+'</div>'+
+  (flash.flip?'<div class="row" style="justify-content:center;margin-top:14px"><button class="btn ghost" data-act="card" data-v="1">Errei (amanhã)</button><button class="btn ghost" data-act="card" data-v="3">Difícil (3 dias)</button><button class="btn" data-act="card" data-v="7">Fácil (7 dias)</button></div>':''):'<div class="empty">Tudo revisado por hoje.</div>');
+}
+function vRanking(){
+  const s=stats();const me=rankPos();
+  const rows=[];for(let i=0;i<10;i++)rows.push({p:i+1,n:"Aluno #"+(1000+i*37),pct:96-i*2,q:420-i*25});
+  return '<div class="head"><div><h1>Ranking</h1><p class="sub">Anônimo: ninguém vê seu nome, só a posição.</p></div></div>'+
+  '<div class="note" style="margin-bottom:12px">Ranking de demonstração. Com os alunos reais, ele é calculado pelos simulados e pelas questões resolvidas.</div>'+
+  '<div class="grid g3" style="margin-bottom:16px"><div class="card kpi"><div class="ic">'+ic("trophy")+'</div><div class="v">'+(me?me+"º":"—")+'</div><div class="l">Sua posição</div></div><div class="card kpi"><div class="ic">'+ic("chart")+'</div><div class="v">'+s.pct+'%</div><div class="l">Seu aproveitamento</div></div><div class="card kpi"><div class="ic">'+ic("quiz")+'</div><div class="v">'+s.tot+'</div><div class="l">Questões feitas</div></div></div>'+
+  '<div class="card"><div class="tbl-wrap"><table class="t"><thead><tr><th>Posição</th><th>Aluno</th><th>Aproveitamento</th><th>Questões</th></tr></thead><tbody>'+rows.map(r=>'<tr><td><b>'+r.p+'º</b></td><td>'+r.n+'</td><td>'+r.pct+'%</td><td>'+r.q+'</td></tr>').join("")+(me?'<tr style="background:#EFFAF8"><td><b>'+me+'º</b></td><td><b>Você</b></td><td>'+s.pct+'%</td><td>'+s.tot+'</td></tr>':'')+'</tbody></table></div></div>';
+}
+function vAvisos(){
+  AVISOS.forEach(a=>{if(!S.read.includes(a.id))S.read.push(a.id);});save();
+  return '<div class="head"><div><h1>Avisos</h1><p class="sub">Comunicados da equipe MedRise.</p></div></div>'+AVISOS.map(a=>'<div class="card" style="margin-bottom:12px"><div class="row" style="justify-content:space-between"><h2>'+esc(a.t)+'</h2><span class="sub">'+a.dt+'</span></div><p style="margin:8px 0 0">'+esc(a.d)+'</p></div>').join("");
+}
+function vPerfil(){
+  const u=S.user;const list=u.tipo==="R1"?ESPEC_R1:ESPEC_RMAIS.map(e=>e[0]);
+  return '<div class="head"><div><h1>Meu Perfil</h1><p class="sub">Tudo aqui personaliza a plataforma.</p></div></div><div class="card" style="max-width:720px"><div class="grid g2">'+
+  '<label class="f">Nome<input type="text" id="p-nome" value="'+esc(u.nome)+'"></label>'+
+  '<label class="f">Tipo de residência<select id="p-tipo"><option value="R1" '+(u.tipo==="R1"?"selected":"")+'>Acesso direto (R1)</option><option value="R+" '+(u.tipo==="R+"?"selected":"")+'>Com pré-requisito (R+)</option></select></label>'+
+  '<label class="f">Especialidade<select id="p-esp">'+list.map(e=>'<option '+(u.esp===e?"selected":"")+'>'+esc(e)+'</option>').join("")+'</select></label>'+
+  '<label class="f">Data da prova<input type="date" id="p-data" value="'+u.data+'"></label>'+
+  '<label class="f">Horas por semana<input type="number" id="p-horas" min="2" max="80" value="'+u.horas+'"></label></div>'+
+  '<div style="margin-top:16px"><div class="f" style="margin-bottom:8px;font-size:13px;font-weight:600;color:var(--ink2)">Provas que vou fazer</div><div class="chips">'+BANCAS.map(b=>'<button class="chip '+(u.bancas.includes(b)?"on":"")+'" data-act="p-banca" data-v="'+b+'">'+b+'</button>').join("")+'</div></div>'+
+  '<div class="row" style="margin-top:20px;justify-content:space-between"><button class="btn" data-act="p-save">Salvar</button><button class="btn ghost" data-act="reset">Apagar meus dados e recomeçar</button></div></div>';
+}
+
+
+/* ================= LANDING ================= */
+const IMG={hero:"img/medrise-medico.jpg",estudo:"img/medrise-hero.jpg"};
+const INST=[["img/inst/00.png", "ENAMED"], ["img/inst/01.png", "ENARE"], ["img/inst/02.png", "AMRIGS"], ["img/inst/03.png", "Santa Casa Campo Grande"], ["img/inst/04.png", "Medicina USP"], ["img/inst/05.png", "UNIFESP"], ["img/inst/06.png", "HC USP Ribeirão"], ["img/inst/07.png", "UFRJ"], ["img/inst/08.png", "Santa Casa BH"], ["img/inst/09.png", "Revalida"], ["img/inst/10.png", "AMP"], ["img/inst/11.png", "FAMERP"], ["img/inst/12.png", "HCPA"], ["img/inst/13.png", "HOB"], ["img/inst/14.png", "IAMSPE"], ["img/inst/15.png", "Associação de Apoio à Residência Médica"], ["img/inst/16.png", "Santa Casa São José dos Campos"], ["img/inst/17.png", "SUS SES-GO"], ["img/inst/18.png", "SES Bahia"], ["img/inst/19.png", "UEPA"], ["img/inst/20.png", "UNITAU"], ["img/inst/21.png", "Hospital Sabará"], ["img/inst/22.png", "Santa Casa Limeira"], ["img/inst/23.png", "Santa Casa SP"], ["img/inst/24.png", "SES Pernambuco"], ["img/inst/25.png", "UEL"], ["img/inst/26.png", "UERJ"], ["img/inst/27.png", "UNESP"], ["img/inst/28.png", "FMABC"], ["img/inst/29.png", "Hospital Israelita Albert Einstein"], ["img/inst/30.png", "Pequeno Príncipe"], ["img/inst/31.png", "IDOR"], ["img/inst/33.png", "UEM"], ["img/inst/34.png", "UFCSPA"], ["img/inst/35.png", "CEREM AM"], ["img/inst/36.png", "FAMEMA"], ["img/inst/37.png", "Faculdade de Medicina de Jundiaí"], ["img/inst/38.png", "Hospital Alemão Oswaldo Cruz"], ["img/inst/39.png", "Hospital Sírio-Libanês"], ["img/inst/40.png", "CEREM-GO"], ["img/inst/41.png", "PUCPR"], ["img/inst/42.png", "Santa Casa Ribeirão Preto"], ["img/inst/43.png", "SES-DF"], ["img/inst/44.png", "SMS São Paulo"]];
+let demo={i:0,sel:{},show:{}};
+const DEMO_Q=["q1","q5","q14"];
+function chk(t){return '<li class="ck"><span class="ck-i">'+ic("ok")+'</span>'+t+'</li>';}
+function sTitle(kicker,h,lead,center){return '<div class="'+(center?"lp-center":"")+'"><span class="kick">'+kicker+'</span><h2>'+h+'</h2>'+(lead?'<p class="lead">'+lead+'</p>':'')+'</div>';}
+function demoBox(){
+  const id=DEMO_Q[demo.i];const q=qById(id);const sel=demo.sel[id];const show=demo.show[id];
+  const answered=Object.keys(demo.show).length;const ok=DEMO_Q.filter(x=>demo.show[x]&&demo.sel[x]===qById(x).c).length;
+  const alts=q.a.map((t,i)=>{let cl="alt";if(show){if(i===q.c)cl+=" right";else if(i===sel)cl+=" wrong";}else if(sel===i)cl+=" sel";return '<button class="'+cl+'" data-act="demo-pick" data-i="'+i+'"><span class="lt">'+L[i]+'</span><span>'+esc(t)+'</span></button>';}).join("");
+  return '<div class="demo"><div class="demo-top"><div class="row" style="gap:10px;align-items:center">'+LOGO.replace('width="34" height="34"','width="22" height="22"')+'<b>MedRise · Demonstração</b><span class="tag gray">Sem login</span></div><div class="row" style="gap:6px">'+DEMO_Q.map((x,k)=>'<button class="dq '+(k===demo.i?"cur":(demo.show[x]?(demo.sel[x]===qById(x).c?"okk":"bad"):""))+'" data-act="demo-go" data-i="'+k+'" aria-label="Questão '+(k+1)+'">'+(k+1)+'</button>').join("")+'</div></div>'+
+   '<div style="padding:18px"><div class="row" style="gap:8px"><span class="tag" style="background:'+AREA_COLOR[q.area]+'1A;color:'+AREA_COLOR[q.area]+'">'+esc(q.area)+'</span><span class="tag gray">'+esc(q.tema)+'</span></div><p class="q-enun" style="font-size:15px">'+esc(q.e)+'</p>'+alts+
+   (show?'<div class="coment" style="margin-top:10px"><b>'+(sel===q.c?'Acertou!':'Resposta correta: '+L[q.c])+'</b><p style="margin:6px 0 0">'+esc(q.com)+'</p><div class="tutor"><b>Tutor MedRise:</b> '+esc(q.tut)+'</div></div>':'')+
+   '<div class="row" style="justify-content:space-between;margin-top:12px;align-items:center"><span class="sub">'+(answered?ok+' de '+answered+' certas':'Escolha uma alternativa')+'</span>'+(!show?'<button class="btn" data-act="demo-answer" '+(sel==null?"disabled":"")+'>Responder</button>':(demo.i<DEMO_Q.length-1?'<button class="btn dark" data-act="demo-go" data-i="'+(demo.i+1)+'">Próxima questão</button>':'<a class="btn" data-act="goto" data-v="planos">Gostei, quero acesso</a>'))+'</div></div></div>';
+}
+function vLanding(){
+  const go=(id,l,cls)=>'<a class="'+(cls||"")+'" data-act="goto" data-v="'+id+'">'+l+'</a>';
+  const buy=(st)=>'<a class="btn" '+(st?'style="'+st+'"':'')+' data-act="goto" data-v="planos">Comprar agora</a>';
+  const marquee=BANCAS.concat(["ENAMED","REVALIDA","UFMG","HCPA","IAMSPE","SCMBH","UNESP","FAMERP","UEL","HIAE","SES-PE","PSU-GO"]);
+  const lg=x=>'<span class="lg-card"><img src="'+x[0]+'" alt="'+esc(x[1])+'" loading="lazy"></span>';
+  const mItem=b=>'<span class="m-item"><span class="m-badge">'+esc(b.replace(/[^A-Z0-9]/gi,"").slice(0,2))+'</span>'+esc(b)+'</span>';
+  const eco=[["quiz","Questões comentadas","Comentário direto ao ponto, com tabela-resumo em cada questão."],["timer","Simulados","Prova completa com cronômetro, nota por área e gabarito comentado."],["trophy","Ranking","Veja sua posição entre os alunos, sem expor seu nome."],["chart","Desempenho","Acertos, erros e evolução por área e por tema, em gráficos."],["book","Dossiê da banca","O que cada instituição mais cobra, num resumo de alto rendimento."],["plan","Cronograma automático","Plano semanal montado pela data da sua prova e pelo seu desempenho."],["bot","Tutor MedRise","Não entendeu? Um clique e a explicação vem de outro jeito."],["target","Minha especialidade","Instituições, concorrência e nota de corte da área que você quer."],["x","Caderno de erros","Tudo o que você errou, agrupado por tema, pra refazer."],["heart","Salvos e grifos","Questões salvas e trechos grifados num lugar só."],["cards","Flashcards","Revisão espaçada: o difícil volta antes, o fácil depois."],["cal","Calendário de provas","Datas de inscrição e prova, com lembrete."]];
+  const dif=[["bot","Tutor que explica de novo","Errou e não entendeu o comentário? O Tutor reexplica com outras palavras, com analogia e mnemônico. Tira a dúvida na hora, sem esperar suporte."],["plan","Cronograma que se ajusta a você","Você informa a data da prova e as horas por semana. O plano sai pronto e dá mais tempo pras áreas em que você mais erra."],["pen","Dossiê limpo, com grifo","Nada de PDF poluído de marca d'água. Leia no site, grife em 3 cores, anote e encontre tudo depois em Salvos e Grifos."],["target","R1 e R+ no mesmo lugar","Acesso direto ou com pré-requisito: no cadastro você escolhe o caminho e a plataforma mostra o conteúdo certo."],["cards","Flashcards com revisão espaçada","As questões viram cartões. O que você acha difícil volta amanhã, o que é fácil volta em uma semana."],["users","Área da sua especialidade","Instituições que mais formam na sua área, vagas, concorrência e nota de corte, tudo num painel só."]];
+  const comp=[["Questões comentadas",1,1],["Simulados com ranking",1,1],["Dossiê por instituição",0,1],["Leitura com grifo e anotação, sem marca d'água",0,1],["Tutor que reexplica a questão",0,1],["Cronograma automático pelo seu desempenho",0,1],["Flashcards com revisão espaçada",0,1],["Conteúdo para R1 e R+",0,1],["Painel da sua especialidade",0,1]];
+  const plans=[["Plano Mensal","Flexibilidade mês a mês","R$ 159","/mês","Cartão ou PIX. No cartão, renovação automática mensal.",["Plataforma completa","Dossiês das bancas","Questões, simulados e ranking","Tutor MedRise","Cronograma automático","Cancele quando quiser"],false,""],
+    ["Plano Semestral","6 meses de acesso","R$ 699","à vista","ou em até 6x de R$ 116,50 no cartão",["Tudo do plano mensal","6 meses sem se preocupar com renovação","Cronograma até o dia da prova","Flashcards e caderno de erros","Sai por R$ 116,50 por mês"],true,"Economize R$ 255 em relação ao mensal"]];
+  const faq=[["Serve pra R1 e pra R+?","Sim. No cadastro você escolhe acesso direto (R1) ou prova com pré-requisito (R2, R3…), e a plataforma mostra o conteúdo certo pra você."],["O que é o dossiê da banca?","É um resumo feito a partir das provas oficiais de cada instituição: os temas que mais caem, um resumo de alto rendimento, o que a banca não costuma cobrar e um checklist pra véspera."],["Quem revisa o conteúdo?","Todo dossiê e comentário passa por revisão de médicos antes de ser publicado."],["Funciona no celular?","Sim. Dá pra estudar, fazer questões e simulados no celular, no tablet ou no computador."],["Tenho garantia?","Sim. Você tem 7 dias pra testar. Se não gostar, devolvemos seu dinheiro."],["Como recebo o acesso?","Logo depois da compra você cria sua conta, responde 4 perguntas e já começa a estudar."],["Posso pagar no PIX?","Sim, no cartão ou no PIX."],["Qual a diferença entre os planos?","Os dois dão acesso à plataforma completa. No mensal você paga R$ 159 por mês; no semestral paga R$ 699 por 6 meses, o que sai R$ 116,50 por mês."]];
+  const calDays=[];for(let d=1;d<=30;d++)calDays.push(d);
+  const calEv={6:["UERJ"],13:["USP-SP","SUS-SP"],20:["ENARE"],27:["UNIFESP"],28:["SCMSP"]};
+
+  return '<div class="lp">'+
+  /* NAV */
+  '<header class="lp-nav"><div class="lp-in"><a class="lp-logo" data-act="goto" data-v="topo" aria-label="MedRise">'+LOGO_FULL(42)+'</a><nav class="lp-links">'+go("recursos","Plataforma","hide-s")+go("diferenciais","Diferenciais","hide-s")+go("dossies","Dossiês","hide-s")+go("instituicoes","Instituições","hide-s")+go("calendario","Calendário","hide-s")+go("planos","Planos")+'<a href="#cadastro" class="btn ghost sm">Área do aluno</a>'+buy()+'</nav></div></header>'+
+  /* HERO */
+  '<section class="lp-hero" id="topo"><div class="lp-in"><div><span class="pill-k">'+ic("star")+'Preparatório para Residência · R1 e R+</span><h1 style="margin-top:16px">Pare de estudar tudo. <em>Estude o que a sua banca cobra.</em></h1>'+
+   '<p class="lead">Dossiê de cada instituição, questões comentadas, simulados com ranking, Tutor que reexplica e um cronograma que se ajusta a você. Tudo num lugar só, pra você chegar na prova sabendo o que vai cair.</p>'+
+   '<ul class="hero-ck">'+["Questões comentadas","Simulados com ranking","Dossiê de cada banca","Tutor MedRise","Cronograma automático","Análise de desempenho","Grifo e anotação","Flashcards"].map(chk).join("")+'</ul>'+
+   '<div class="row">'+buy("background:var(--mint);color:var(--ink)")+go("demo","Testar grátis agora","btn ghost")+'</div>'+
+   '<div class="lp-checks"><span>'+ic("shield")+'7 dias de garantia</span><span>'+ic("check")+'Revisado por médicos</span><span>'+ic("phone")+'Celular e computador</span></div></div>'+
+   '<div><div style="position:relative"><img class="lp-img" src="'+IMG.hero+'" alt="Médico estudando para a prova de residência" style="aspect-ratio:4/3;box-shadow:0 30px 60px rgba(0,0,0,.3)"><div class="card float-kpi" aria-hidden="true"><div style="display:flex;gap:12px;align-items:center">'+donut(78,"#0FA3A3",64)+'<div><b style="font-family:Sora">Acerto em Clínica</b><div class="sub" style="font-size:13px">+12 pontos no último mês</div></div></div></div><div class="card float-tag" aria-hidden="true"><b style="color:var(--teal-d)">Dossiê UERJ</b><div class="sub" style="font-size:12px">Top 5 temas que mais caem</div></div></div>'+
+   '<div class="grid g3 hero-mini">'+[["quiz","Questões","comentadas"],["timer","Simulados","com cronômetro"],["bot","Tutor","que reexplica"]].map(x=>'<div class="mini">'+ic(x[0])+'<b>'+x[1]+'</b><span>'+x[2]+'</span></div>').join("")+'</div></div></div></section>'+
+  /* MARQUEE */
+  '<section class="lp-marq" id="instituicoes" aria-label="Instituições"><div class="lp-in" style="text-align:center;margin-bottom:18px"><span class="kick" style="color:var(--mint)">Processos e instituições</span><h2 style="color:#fff;font-size:clamp(19px,2vw,24px);margin:0 auto">Prepare-se para as seleções que você vai enfrentar</h2></div>'+
+   '<div class="marq"><div class="marq-t">'+INST.slice(0,22).concat(INST.slice(0,22)).map(lg).join("")+'</div></div>'+
+   '<div class="marq" style="margin-top:14px"><div class="marq-t rev">'+INST.slice(22).concat(INST.slice(22)).map(lg).join("")+'</div></div></section>'+
+  /* STRIP */
+  '<section class="lp-band" style="padding:44px 0"><div class="lp-in grid g4">'+[["book","Dossiê da banca","O que cada instituição cobra"],["timer","Simulados","Em condições reais de prova"],["chart","Ranking e desempenho","Saiba onde você está"],["bot","Tutor MedRise","Reexplica na hora"]].map(x=>'<div class="strip-i"><span class="ic-c">'+ic(x[0])+'</span><div><b>'+x[1]+'</b><div class="sub">'+x[2]+'</div></div></div>').join("")+'</div></section>'+
+  /* ECOSSISTEMA */
+  '<section class="lp-band soft" id="recursos"><div class="lp-in">'+sTitle("Tudo o que você precisa pra passar","Muito mais do que um banco de questões","Uma plataforma que transforma a prova da sua banca em estratégia de estudo.",true)+'<div class="grid g4" style="margin-top:36px">'+eco.map(f=>'<div class="card feat"><div class="ic">'+ic(f[0])+'</div><h3>'+f[1]+'</h3><p class="sub" style="margin:0">'+f[2]+'</p></div>').join("")+'</div></div></section>'+
+  /* DIFERENCIAIS */
+  '<section class="lp-band lp-dark" id="diferenciais"><div class="lp-in">'+sTitle("Só na MedRise","Os diferenciais que fazem você passar na frente","Tudo o que um preparatório comum tem, mais o que ninguém te entrega.",true)+'<div class="grid g3" style="margin-top:36px">'+dif.map((d,k)=>'<div class="dif"><div class="row" style="justify-content:space-between;align-items:center"><span class="ic-c lg">'+ic(d[0])+'</span><span class="num">0'+(k+1)+'</span></div><h3>'+d[1]+'</h3><p>'+d[2]+'</p></div>').join("")+'</div></div></section>'+
+  /* COMPARATIVO */
+  '<section class="lp-band"><div class="lp-in" style="max-width:900px">'+sTitle("Compare","Estudo comum x MedRise","",true)+'<div class="card" style="margin-top:30px;padding:0;overflow:hidden"><div class="tbl-wrap"><table class="t cmp"><thead><tr><th>Recurso</th><th>Estudo comum</th><th class="hl">MedRise</th></tr></thead><tbody>'+comp.map(c=>'<tr><td>'+c[0]+'</td><td>'+(c[1]?'<span class="yes">'+ic("ok")+'</span>':'<span class="nope">'+ic("no")+'</span>')+'</td><td class="hl"><span class="yes">'+ic("ok")+'</span></td></tr>').join("")+'</tbody></table></div></div><div style="text-align:center;margin-top:26px">'+buy()+'</div></div></section>'+
+  /* PROVAS */
+  '<section class="lp-band soft"><div class="lp-in two">'+'<div>'+sTitle("Treine com provas de verdade","Questões organizadas pra mostrar onde você está forte e onde falta","Cada questão vem com comentário, tabela-resumo e o Tutor. Você vê a lacuna e já sabe o que revisar.")+'<div class="chips" style="margin-top:20px">'+["Residência R1","R+ (pré-requisito)","ENAMED","REVALIDA","Simulados MedRise"].map(t=>'<span class="chip on" style="cursor:default">'+t+'</span>').join("")+'</div></div>'+
+   '<div class="grid g2">'+[["quiz","Resolva","Questões por banca, área e tema"],["chart","Compare","Sua nota contra a dos outros alunos"],["x","Revise","Caderno de erros e Tutor"],["zap","Evolua","Cronograma ajusta o foco"]].map(x=>'<div class="card feat"><div class="ic">'+ic(x[0])+'</div><h3>'+x[1]+'</h3><p class="sub" style="margin:0">'+x[2]+'</p></div>').join("")+'</div></div></section>'+
+  /* SIMULADOS */
+  '<section class="lp-band"><div class="lp-in two"><div class="sim-mock card"><div class="row" style="justify-content:space-between;align-items:center;margin-bottom:12px"><b>Simulado UERJ · Clínica</b><span class="timer" style="font-size:18px">'+ic("timer").replace('<svg','<svg width="18" height="18" style="vertical-align:-3px;margin-right:4px"')+'42:17</span></div><div class="bar-h" style="margin-bottom:14px"><i style="width:62%"></i></div><p style="margin:0 0 12px;font-size:14px">Mulher de 52 anos com hipertensão estágio 1, sem comorbidades. Qual classe NÃO é preferencial como primeira linha?</p>'+["Diurético tiazídico","Inibidor da ECA","Betabloqueador"].map((t,i)=>'<div class="alt'+(i===2?" sel":"")+'" style="cursor:default"><span class="lt">'+L[i]+'</span><span>'+t+'</span></div>').join("")+'<div class="qnav" style="margin-top:12px">'+Array.from({length:16},(_,i)=>'<button class="'+(i===9?"cur":(i<9?"done":""))+'" tabindex="-1">'+(i+1)+'</button>').join("")+'</div></div>'+
+   '<div>'+sTitle("Simulados MedRise","Simule antes de chegar na prova","Resolva no tempo da prova e descubra como você se compara aos outros alunos.")+'<ul class="ck-list">'+["Cronômetro e mapa da prova","Resultado por área","Ranking anônimo","Histórico de tentativas","Gabarito comentado","Erros direto pro caderno","Análise de desempenho","Tutor em cada questão"].map(chk).join("")+'</ul></div></div></section>'+
+  /* DESEMPENHO */
+  '<section class="lp-band soft"><div class="lp-in two"><div>'+sTitle("Ranking e desempenho","Descubra exatamente onde você está","Não basta saber quantas acertou. Veja sua posição, seu acerto por área e os temas que estão te derrubando.")+'<div class="grid g2" style="margin-top:22px">'+[["trophy","Posição no ranking"],["check","Acertos e erros"],["chart","Acerto por área"],["flag","Temas pra reforçar"]].map(x=>'<div class="strip-i"><span class="ic-c">'+ic(x[0])+'</span><b>'+x[1]+'</b></div>').join("")+'</div></div>'+
+   '<div class="card chart"><div class="row" style="justify-content:space-between;align-items:center"><b>Seu acerto por área</b><span class="tag">Exemplo</span></div>'+barChart([{label:"Clínica",value:82,color:AREA_COLOR["Clínica Médica"]},{label:"Cirurgia",value:71,color:AREA_COLOR["Cirurgia"]},{label:"Pediatria",value:76,color:AREA_COLOR["Pediatria"]},{label:"GO",value:64,color:AREA_COLOR["Ginecologia e Obstetrícia"]},{label:"Preventiva",value:88,color:AREA_COLOR["Medicina Preventiva"]}],{max:100,unit:"%",h:210,label:"Exemplo de desempenho"})+'<div class="note" style="margin-top:10px;color:var(--ink2);background:#F1FBF8">Ponto fraco: <b>GO, síndromes hipertensivas</b>. O cronograma já aumentou suas horas nesse tema.</div></div></div></section>'+
+  /* DOSSIÊS */
+  '<section class="lp-band" id="dossies"><div class="lp-in">'+sTitle("Dossiê da banca","O dossiê que mostra o jogo de cada instituição","Feito a partir das provas oficiais dos últimos anos e revisado por médicos. Leitura limpa, com grifo e anotação.",true)+
+   '<div class="grid g3" style="margin-top:34px">'+[["chart","Raio-X da banca","Quanto cai de cada área"],["layers","Temas que mais caem","Ranking dos assuntos repetidos"],["book","Resumo de alto rendimento","Só o que importa, direto"],["zap","Questão relâmpago","Fixação rápida"],["no","O que não cai","Pare de perder tempo"],["check","Checklist da véspera","Pra ler no dia da prova"]].map(x=>'<div class="strip-i card pad-s"><span class="ic-c">'+ic(x[0])+'</span><div><b>'+x[1]+'</b><div class="sub">'+x[2]+'</div></div></div>').join("")+'</div>'+
+   '<div class="doss-row">'+BANCAS.map(b=>'<div class="doss-card"><span class="ic-c">'+ic("book")+'</span><b>Dossiê '+b+' 2027</b><span class="sub" style="font-size:12px">Provas 2022–2026</span></div>').join("")+'</div><p class="sub" style="text-align:center;font-size:13px;margin-top:10px">Dossiês em produção para as principais instituições.</p></div></section>'+
+  /* DEMO */
+  '<section class="lp-band lp-dark" id="demo"><div class="lp-in two"><div>'+sTitle("Demonstração interativa","Não imagine. Experimente agora.","Responda 3 questões, veja o comentário e chame o Tutor. Sem login, sem cadastro.")+'<ul class="ck-list light">'+["Comentário com o porquê da resposta","Tutor que explica de outro jeito","Mapa das questões","Placar na hora"].map(chk).join("")+'</ul></div><div id="demo-box">'+demoBox()+'</div></div></section>'+
+  /* CALENDÁRIO */
+  '<section class="lp-band soft" id="calendario"><div class="lp-in two"><div>'+sTitle("Próximas provas","Todas as datas num lugar só","Inscrição e prova de cada residência, com lembrete por e-mail pra você não perder nenhum prazo.")+'<ul class="ck-list">'+["Datas atualizadas pela equipe","Filtro pelas suas bancas","Lembrete de inscrição","Contagem regressiva no painel"].map(chk).join("")+'</ul></div>'+
+   '<div class="card"><div class="row" style="justify-content:space-between;align-items:center;margin-bottom:12px"><b>Calendário de provas</b><span class="tag">Visualização de exemplo</span></div><div class="cal">'+["D","S","T","Q","Q","S","S"].map(d=>'<span class="cal-h">'+d+'</span>').join("")+'<span></span><span></span>'+calDays.map(d=>'<span class="cal-d'+(calEv[d]?" ev":"")+'"><b>'+d+'</b>'+(calEv[d]?calEv[d].map(e=>'<i>'+e+'</i>').join(""):"")+'</span>').join("")+'</div></div></div></section>'+
+  /* MÉTODO */
+  '<section class="lp-band"><div class="lp-in two"><div>'+sTitle("O problema","Estudar muito não é o mesmo que estudar certo","")+'<ul class="bad-list">'+["Resolvem questões sem acompanhar a evolução","Fazem provas sem analisar os próprios erros","Estudam tudo igual, sem saber o que a banca cobra","Perdem tempo procurando material em vários lugares","Ficam com dúvida e ninguém explica","Chegam na prova sem treinar em condições reais"].map(t=>'<li><span class="nope">'+ic("no")+'</span>'+t+'</li>').join("")+'</ul></div>'+
+   '<div class="sol"><span class="ic-c lg">'+ic("zap")+'</span><h3 style="font-size:20px;margin-top:14px;color:#fff">A MedRise junta treino, análise e estratégia num lugar só.</h3><p style="color:#CBE9E4">Você sabe o que a sua banca cobra, treina do jeito que ela cobra e acompanha cada ponto que falta até o dia da prova.</p>'+buy("background:var(--mint);color:var(--ink);margin-top:8px")+'</div></div></section>'+
+  /* PRA QUEM */
+  '<section class="lp-band soft"><div class="lp-in two"><img class="lp-img" src="'+IMG.estudo+'" alt="Médica estudando no notebook" style="aspect-ratio:4/3"><div>'+sTitle("Pra quem é","Feito pra quem vai prestar R1 ou R+","Acabou de se formar e vai pro acesso direto? Ou já é residente e quer a subespecialidade? A MedRise se adapta ao seu caminho.")+'<div class="grid g2" style="margin-top:22px"><div class="card pad-s"><span class="ic-c">'+ic("target")+'</span><h3 style="margin-top:8px">R1, acesso direto</h3><p class="sub" style="margin:4px 0 0">Clínica, Cirurgia, Pediatria, GO e Preventiva, do jeito que a sua banca cobra.</p></div><div class="card pad-s"><span class="ic-c">'+ic("layers")+'</span><h3 style="margin-top:8px">R+, com pré-requisito</h3><p class="sub" style="margin:4px 0 0">Cardio, Plástica, Uro, Neonato e outras, com foco na área do pré-requisito.</p></div></div></div></div></section>'+
+  /* COMO FUNCIONA */
+  '<section class="lp-band" id="como"><div class="lp-in">'+sTitle("Como funciona","Um caminho simples pra estudar com estratégia","",true)+'<div class="grid g4" style="margin-top:34px">'+[["user","Diga sua residência","R1 ou R+, especialidade, provas e horas por semana."],["plan","Receba seu plano","Dossiês das suas bancas e cronograma semanal prontos."],["quiz","Treine","Questões, simulados e Tutor sempre que travar."],["trophy","Evolua até a prova","Gráficos, ranking e revisão do que você erra."]].map((x,k)=>'<div class="card step"><div class="row" style="justify-content:space-between;align-items:center"><span class="n">0'+(k+1)+'</span><span class="ic-c">'+ic(x[0])+'</span></div><h3>'+x[1]+'</h3><p class="sub" style="margin:0">'+x[2]+'</p></div>').join("")+'</div></div></section>'+
+  /* PLANOS */
+  '<section class="lp-band soft" id="planos"><div class="lp-in">'+sTitle("Escolha seu plano","Comece hoje e estude do jeito certo","Mesma plataforma completa, duas formas de acesso.",true)+'<div class="grid g2" style="margin:40px auto 0;max-width:860px;align-items:stretch">'+
+   plans.map(p=>'<div class="card price '+(p[6]?"best":"")+'">'+(p[6]?'<span class="flag">Mais vantajoso</span>':'')+'<div><h3>'+p[0]+'</h3><span class="sub">'+p[1]+'</span></div><div><span class="val">'+p[2]+'</span> <span class="sub">'+p[3]+'</span></div><span class="sub">'+p[4]+'</span>'+(p[7]?'<span class="tag ok" style="align-self:flex-start">'+p[7]+'</span>':'')+'<ul>'+p[5].map(x=>'<li>'+x+'</li>').join("")+'</ul><a class="btn '+(p[6]?"":"dark")+'" href="#cadastro" style="margin-top:auto">Comprar agora</a></div>').join("")+'</div></div></section>'+
+  /* GARANTIA */
+  '<section class="lp-band"><div class="lp-in"><div class="guar"><span class="ic-c xl">'+ic("shield")+'</span><div><h2 style="font-size:24px">Garantia de 7 dias</h2><p class="lead" style="margin-top:6px">Entre, teste tudo, faça simulados e leia os dossiês. Se em 7 dias você achar que não é pra você, devolvemos 100% do seu dinheiro.</p></div></div></div></section>'+
+  /* FAQ */
+  '<section class="lp-band soft" id="faq"><div class="lp-in" style="max-width:820px">'+sTitle("Dúvidas","Perguntas frequentes","",true)+'<div class="faq" style="margin-top:20px">'+faq.map(f=>'<details><summary>'+f[0]+'</summary><p>'+f[1]+'</p></details>').join("")+'</div></div></section>'+
+  /* CTA */
+  '<section class="lp-band lp-cta"><div class="lp-in"><h2>Sua vaga não espera. Comece a estudar o que cai.</h2><p class="lead" style="color:#E3FBF6;margin:12px auto 0">Dossiê, questões, simulados, Tutor e cronograma. Tudo num lugar só.</p><div style="margin-top:26px">'+buy("background:#fff;color:var(--ink)")+'</div></div></section>'+
+  '<footer class="lp-foot"><div class="lp-in row" style="justify-content:space-between;align-items:center">'+LOGO_FULL(38,true)+'<span>© MedRise</span></div></footer></div>';
+}
+/* ================= RENDER ================= */
+let tick=null;
+function render(){
+  const root=$("#root");hideBar();
+  const [r,p]=route();
+  if(r==="home"||(!S.user&&r!=="cadastro")){root.innerHTML=vLanding();return;}
+  if(!S.user){root.innerHTML=vOnboard();return;}
+  let html;
+  switch(r){
+    case "especialidade":html=vEspecialidade();break;
+    case "dossies":html=vDossies();break;
+    case "dossie":html=vDossie(p);break;
+    case "questoes":html=vQuestoes();break;
+    case "simulados":html=vSimulados();break;
+    case "sim":html=vSim();break;
+    case "res":html=vRes(p);break;
+    case "calendario":html=vCalendario();break;
+    case "cronograma":html=vCronograma();break;
+    case "desempenho":html=vDesempenho();break;
+    case "erros":html=vErros();break;
+    case "salvos":html=vSalvos();break;
+    case "flashcards":html=vFlash();break;
+    case "ranking":html=vRanking();break;
+    case "avisos":html=vAvisos();break;
+    case "perfil":html=vPerfil();break;
+    default:html=vInicio();
+  }
+  root.innerHTML=shell(html);
+  if(r==="dossie")afterDossie();
+  clearInterval(tick);if(r==="sim"&&run){tick=setInterval(()=>{const el=$("#timer");if(!el){clearInterval(tick);return;}const left=Math.max(0,run.end-Date.now());el.textContent=String(Math.floor(left/60000)).padStart(2,"0")+":"+String(Math.floor(left/1000)%60).padStart(2,"0");if(left<=0){clearInterval(tick);finishSim();}},1000);}
+}
+window.addEventListener("hashchange",()=>{qview={sel:null,show:false,tutor:false,cut:qview.cut};render();window.scrollTo(0,0);});
+
+/* ================= ACTIONS ================= */
+function finishSim(){
+  if(!run)return;const by={};AREAS.forEach(a=>by[a]={t:0,o:0});let ok=0;
+  run.qs.forEach(id=>{const q=qById(id);const a=run.ans[id];const r=a===q.c;by[q.area].t++;if(r){ok++;by[q.area].o++;}if(a!=null)S.ans[id]={ok:r,ch:a,ts:Date.now()};else S.ans[id]={ok:false,ch:null,ts:Date.now()};});
+  const d=new Date();S.sims.push({sid:run.sid,nome:run.nome,dt:d.toLocaleDateString("pt-BR"),ok,total:run.qs.length,by,qs:run.qs,ans:run.ans,secs:Math.round((Date.now()-run.start)/1000)});
+  save();const idx=S.sims.length-1;run=null;location.hash="#res/"+idx;
+}
+document.addEventListener("click",e=>{
+  const t=e.target.closest("[data-act]");if(!t)return;const a=t.dataset.act,v=t.dataset.v;
+  if(a==="demo-pick"){const id=DEMO_Q[demo.i];if(demo.show[id])return;demo.sel[id]=+t.dataset.i;$("#demo-box").innerHTML=demoBox();return;}
+  if(a==="demo-answer"){demo.show[DEMO_Q[demo.i]]=true;$("#demo-box").innerHTML=demoBox();return;}
+  if(a==="demo-go"){demo.i=+t.dataset.i;$("#demo-box").innerHTML=demoBox();return;}
+  if(a==="menu"){$("#side").classList.toggle("open");return;}
+  // onboarding
+  if(a==="ob-fase"){ob.fase=v;}
+  if(a==="ob-tipo"){ob.tipo=v;ob.esp="";}
+  if(a==="ob-esp"){ob.esp=v;}
+  if(a==="ob-banca"){ob.bancas=ob.bancas.includes(v)?ob.bancas.filter(x=>x!==v):ob.bancas.concat(v);}
+  if(a==="ob-back"){ob.step--;}
+  if(a==="ob-next"){if(ob.step<3){ob.step++;}else{S.user={nome:ob.nome.trim(),tipo:ob.tipo,esp:ob.esp,bancas:ob.bancas,data:ob.data,horas:+ob.horas||20,fase:ob.fase};save();location.hash="#inicio";}}
+  if(a.startsWith("ob-")){render();return;}
+  // questions
+  if(a==="pick"){if(qview.show)return;qview.sel=+t.dataset.i;render();return;}
+  if(a==="answer"){const q=filteredQ()[qf.idx];S.ans[q.id]={ok:qview.sel===q.c,ch:qview.sel,ts:Date.now()};save();qview.show=true;render();return;}
+  if(a==="tutor"){qview.tutor=true;render();return;}
+  if(a==="q-next"||a==="q-prev"){const n=filteredQ().length;qf.idx=(qf.idx+(a==="q-next"?1:-1)+n)%n;qview={sel:null,show:false,tutor:false,cut:qview.cut};render();window.scrollTo(0,0);return;}
+  if(a==="save-q"){const id=t.dataset.id;S.saved=S.saved.includes(id)?S.saved.filter(x=>x!==id):S.saved.concat(id);save();toast(S.saved.includes(id)?"Questão salva":"Removida dos salvos");render();return;}
+  // simulados
+  if(a==="sim-start"){const s=SIMULADOS.find(x=>x.id===t.dataset.id);run={sid:s.id,nome:s.nome,qs:s.qs.slice(),i:0,ans:{},start:Date.now(),end:Date.now()+s.min*60000};location.hash="#sim";return;}
+  if(a==="sim-pick"){run.ans[run.qs[run.i]]=+t.dataset.i;render();return;}
+  if(a==="sim-next"){run.i=Math.min(run.qs.length-1,run.i+1);render();return;}
+  if(a==="sim-prev"){run.i=Math.max(0,run.i-1);render();return;}
+  if(a==="sim-go"){run.i=+t.dataset.i;render();return;}
+  if(a==="sim-finish"){const miss=run.qs.length-Object.keys(run.ans).length;if(miss>0&&!t.dataset.sure){t.dataset.sure="1";t.textContent="Faltam "+miss+". Entregar mesmo assim?";return;}finishSim();return;}
+  // others
+  if(a==="lembrete"){toast("Lembrete de "+v+" ativado");return;}
+  if(a==="goto"){const el=document.getElementById(v);if(el)el.scrollIntoView({behavior:"smooth"});return;}
+  if(a==="hl-clear"){delete S.hl[t.dataset.id];S.notes=S.notes.filter(n=>n.id!==t.dataset.id);save();render();toast("Grifos apagados");return;}
+  if(a==="redo-errs"){qf={area:"",tema:"",status:"erradas",idx:0};location.hash="#questoes";return;}
+  if(a==="flip"){flash.flip=!flash.flip;render();return;}
+  if(a==="card"){const q=dueCards()[flash.i];S.cards[q.id]={due:Date.now()+(+v)*864e5};save();flash.flip=false;render();return;}
+  if(a==="p-banca"){const u=S.user;u.bancas=u.bancas.includes(v)?u.bancas.filter(x=>x!==v):u.bancas.concat(v);save();render();return;}
+  if(a==="p-save"){const u=S.user;u.nome=$("#p-nome").value.trim()||u.nome;const tp=$("#p-tipo").value;if(tp!==u.tipo){u.tipo=tp;u.esp=(tp==="R1"?ESPEC_R1[0]:ESPEC_RMAIS[0][0]);}else u.esp=$("#p-esp").value;u.data=$("#p-data").value;u.horas=+$("#p-horas").value||u.horas;save();toast("Perfil salvo");render();return;}
+  if(a==="reset"){if(!t.dataset.sure){t.dataset.sure="1";t.textContent="Clique de novo pra confirmar";return;}S=blank();save();ob={step:0,nome:"",tipo:"R1",esp:"",bancas:[],data:"",horas:20,fase:"Internato"};location.hash="#home";render();return;}
+});
+document.addEventListener("change",e=>{
+  const t=e.target;
+  if(t.dataset.f){qf[t.dataset.f]=t.value;if(t.dataset.f==="area")qf.tema="";qf.idx=0;qview={sel:null,show:false,tutor:false,cut:qview.cut};render();return;}
+  if(t.dataset.act==="plan-done"){S.plan.done[t.dataset.k]=t.checked;save();return;}
+  if(t.id==="p-tipo"){S.user.tipo=t.value;S.user.esp=(t.value==="R1"?ESPEC_R1[0]:ESPEC_RMAIS[0][0]);save();render();}
+});
+document.addEventListener("input",e=>{const t=e.target;
+  if(t.id==="ob-nome"){ob.nome=t.value;const b=document.querySelector('[data-act="ob-next"]');if(b)b.disabled=!t.value.trim();}
+  if(t.id==="ob-data")ob.data=t.value;if(t.id==="ob-horas")ob.horas=t.value;});
+document.addEventListener("contextmenu",e=>{const t=e.target.closest('[data-act="pick"]');if(!t||qview.show)return;e.preventDefault();const q=filteredQ()[qf.idx];const k=q.id+"_"+t.dataset.i;qview.cut[k]=!qview.cut[k];render();});
+document.addEventListener("keydown",e=>{const t=e.target.closest('[data-act="flip"]');if(t&&(e.key==="Enter"||e.key===" ")){e.preventDefault();t.click();}});
+
+/* ================= HIGHLIGHT ================= */
+let selRange=null;
+function hideBar(){const b=$("#hlbar");if(b)b.style.display="none";}
+document.addEventListener("mouseup",e=>{
+  if(e.target.closest("#hlbar"))return;
+  const art=document.getElementById("doss");if(!art){hideBar();return;}
+  const sel=window.getSelection();if(!sel||sel.isCollapsed||!art.contains(sel.anchorNode)||!art.contains(sel.focusNode)){hideBar();return;}
+  selRange=sel.getRangeAt(0).cloneRange();const r=selRange.getBoundingClientRect();const b=$("#hlbar");
+  b.style.display="flex";b.style.left=Math.max(8,r.left+r.width/2-90)+"px";b.style.top=Math.max(8,r.top-50)+"px";
+});
+$("#hlbar").addEventListener("mousedown",e=>e.preventDefault());
+$("#hlbar").addEventListener("click",e=>{
+  const btn=e.target.closest("[data-hl]");if(!btn||!selRange)return;const art=document.getElementById("doss");if(!art)return;
+  let c=btn.dataset.hl,nota="";if(c==="note"){c="h1";}
+  const txt=selRange.toString().trim();if(!txt){hideBar();return;}
+  const mark=document.createElement("mark");mark.className=c;
+  try{mark.appendChild(selRange.extractContents());selRange.insertNode(mark);}catch(err){toast("Não consegui grifar esse trecho");return;}
+  window.getSelection().removeAllRanges();hideBar();
+  const id=art.dataset.id;S.hl[id]=art.innerHTML.replace(/<div class="chart card" id="d-chart">[\s\S]*?<\/div><p class="sub" style="font-size:13px">/, '<div class="chart card" id="d-chart"></div><p class="sub" style="font-size:13px">');
+  const n={id,doss:(DOSSIES.find(d=>d.id===id)||{}).nome,txt,c,nota};
+  if(btn.dataset.hl==="note"){openNote(n);}else{S.notes.push(n);save();toast("Trecho grifado");}
+  afterDossie();
+});
+function openNote(n){
+  const box=document.createElement("div");box.className="card";box.style.cssText="position:fixed;left:50%;top:30%;transform:translateX(-50%);z-index:50;width:min(420px,92vw);box-shadow:0 10px 40px rgba(6,52,63,.3)";
+  box.innerHTML='<h3>Nota sobre o trecho</h3><p class="sub" style="margin:6px 0">"'+esc(n.txt.slice(0,120))+'"</p><textarea id="note-t" style="width:100%" placeholder="Escreva sua anotação"></textarea><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn ghost sm" id="note-c">Cancelar</button><button class="btn sm" id="note-s">Salvar nota</button></div>';
+  document.body.appendChild(box);box.querySelector("#note-t").focus();
+  box.querySelector("#note-c").onclick=()=>{S.notes.push(n);save();box.remove();};
+  box.querySelector("#note-s").onclick=()=>{n.nota=box.querySelector("#note-t").value.trim();S.notes.push(n);save();box.remove();toast("Nota salva");};
+}
+
+render();
+})();
+</script>
+</body>
+</html>
