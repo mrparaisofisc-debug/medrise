@@ -360,6 +360,7 @@ html{scroll-padding-top:76px}
   <button class="nt" data-hl="note">+ Nota</button>
 </div>
 <div class="toast" id="toast"></div>
+<script>(function(){const P={};function pk(n){return n.split('-')[0];}document.addEventListener('error',function(e){const t=e.target;if(!t||t.tagName!=='IMG')return;const src=t.getAttribute('src')||'';const m=src.match(/img\/q\/([^?#]+)$/);if(!m||t.dataset.pk)return;t.dataset.pk='1';const f=m[1],k=pk(f);(P[k]=P[k]||fetch('img/pack/'+k+'.json').then(r=>r.ok?r.json():{}).catch(()=>({})) ).then(d=>{if(d[f]){t.src=d[f];document.querySelectorAll('[data-src="'+src+'"]').forEach(z=>z.dataset.src=d[f]);}});},true);})();</script>
 <script>
 (function(){
 "use strict";
