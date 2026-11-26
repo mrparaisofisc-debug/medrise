@@ -26,6 +26,19 @@ Deno.serve(async (req) => {
       system = "Você é um corretor de provas de residência médica no Brasil. Compare a resposta do aluno com o gabarito oficial e dê uma nota de 0 a 10. Aceite sinônimos e respostas equivalentes. Responda SOMENTE um JSON: {\"nota\": número, \"feedback\": \"2 a 4 frases em português, diretas, dizendo o que acertou, o que faltou e como responder na prova\"}.";
       messages = [{ role: "user", content: `${ctx}\n\nResposta do aluno: ${String(b.resposta ?? "").slice(0, 1500)}` }];
       maxTokens = 400;
+    } else if (b.modo === "pista") {
+      const nivel = Math.max(1, Math.min(3, Number(b.nivel) || 1));
+      const guia = [
+        "Aponte só o dado do enunciado em que o aluno deve prestar mais atenção.",
+        "Dê o raciocínio ou conceito que leva ao caminho certo, sem dizer qual alternativa é a correta.",
+        "Ajude a eliminar uma ou duas alternativas ERRADAS, dizendo a letra delas e por quê. Nunca diga qual é a correta.",
+      ][nivel - 1];
+      system = "Você é o Tutor MedRise. O aluno ainda NÃO respondeu a questão abaixo e pediu uma pista. Regras obrigatórias: no máximo 2 frases, português informal; NUNCA revele a alternativa correta, nunca cite a letra correta nem o texto dela, nem diga o diagnóstico/conduta final se isso entregar a resposta; sem dica de memorização. " +
+        `Pista nível ${nivel} de 3: ${guia}\n\nQUESTÃO:\n` + ctx;
+      const hist = Array.isArray(b.hist) ? b.hist.slice(-2) : [];
+      messages = hist.map((m: { role: string; content: string }) => ({ role: "user", content: String(m.content).slice(0, 2000) }));
+      if (!messages.length) messages = [{ role: "user", content: "Me dá uma pista." }];
+      maxTokens = 200;
     } else {
       system = "Você é o Tutor MedRise, professor de preparatório para residência médica no Brasil. Explique a questão abaixo de forma clara e curta (até 180 palavras), em português informal, como um bom professor de cursinho. Use o gabarito oficial como verdade; se o aluno discordar, explique por que a banca considerou aquela resposta. Não invente doses ou dados que não tenha certeza. Termine com uma dica de memorização quando fizer sentido.\n\nQUESTÃO:\n" + ctx;
       const hist = Array.isArray(b.hist) ? b.hist.slice(-8) : [];
