@@ -936,7 +936,7 @@ function vRes(i){
   '<div class="card kpi"><div class="ic">'+ic("trophy")+'</div><div class="v">'+pos+'º</div><div class="l">Posição (ranking demonstrativo)</div></div>'+
   '<div class="card kpi"><div class="ic">'+ic("x")+'</div><div class="v">'+(r.total-r.ok)+'</div><div class="l">Erros, já no seu caderno</div></div></div>'+
   '<div class="card chart" style="margin-bottom:16px"><h2>Nota por área</h2>'+barChart(items,{max:100,unit:"%",label:"Nota por área"})+'</div>'+
-  '<div class="card"><h2>Gabarito comentado</h2>'+r.qs.map((id,k)=>{const q=qById(id);const a=r.ans[id];const ok=isOk(q,a);return '<details style="border-top:1px solid var(--line);padding:12px 0"><summary style="cursor:pointer;display:flex;gap:10px;align-items:center"><span class="tag '+(ok?"ok":"bad")+'">'+(k+1)+' · '+(ok?"Certa":"Errada")+'</span><span>'+esc(q.tema)+'</span><span class="sub">Sua: '+(a!=null?L[a]:"—")+' · Gabarito: '+L[q.c]+'</span></summary><p>'+esc(q.e)+'</p><p><b>Comentário:</b> '+esc(q.com)+'</p></details>';}).join("")+'</div>';
+  '<div class="card"><h2>Gabarito comentado</h2>'+r.qs.map((id,k)=>{const q=qById(id);const a=r.ans[id];const ok=isOk(q,a);return '<details style="border-top:1px solid var(--line);padding:12px 0"><summary style="cursor:pointer;display:flex;gap:10px;align-items:center"><span class="tag '+(ok?"ok":"bad")+'">'+(k+1)+' · '+(ok?"Certa":"Errada")+'</span><span>'+esc(q.tema)+'</span><span class="sub">Sua: '+(a!=null?L[a]:"—")+' · Gabarito: '+L[q.c]+'</span></summary>'+revBlock(q,a)+'</details>';}).join("")+'</div>';
 }
 
 function vCalendario(){
@@ -974,11 +974,22 @@ function vDesempenho(){
   '<div class="card"><h2>Por tema</h2><div class="tbl-wrap"><table class="t" style="margin-top:8px"><thead><tr><th>Tema</th><th>Área</th><th>Feitas</th><th style="width:40%">Acerto</th></tr></thead><tbody>'+temas.map(([t,v])=>{const p=Math.round(v.o/v.t*100);return '<tr><td><b>'+esc(t)+'</b></td><td class="sub">'+esc(v.area)+'</td><td>'+v.t+'</td><td><div class="row" style="align-items:center;gap:10px;flex-wrap:nowrap"><div class="bar-h" style="flex:1"><i style="width:'+p+'%;background:'+(p<60?"var(--bad)":"var(--teal)")+'"></i></div><b>'+p+'%</b></div></td></tr>';}).join("")+'</tbody></table></div></div>':'<div class="empty">Resolva questões ou faça um simulado pra ver seu desempenho. <br><a href="#questoes">Ir para o banco de questões</a></div>');
 }
 
+function revBlock(q,a){
+  const ab=q.tipo==="aberta";let alts="";
+  if(!ab&&q.a&&q.a.length){alts=q.a.map((t,i)=>{const cor=q.ok?q.ok.includes(i):i===q.c;const mine=a===i;const bg=cor?"#e7f6ee":(mine?"#fdecec":"#fff");const bd=cor?"#2f9e6a":(mine?"#d9534f":"var(--line)");
+    return '<div style="display:flex;gap:10px;align-items:flex-start;border:1px solid '+bd+';background:'+bg+';border-radius:10px;padding:8px 12px;margin-top:6px"><b style="min-width:18px">'+L[i]+'</b><div style="flex:1">'+(q.aimg&&q.aimg[i]?'<img src="'+q.aimg[i]+'" alt="Alternativa '+L[i]+'" loading="lazy" style="max-width:100%;max-height:220px;border-radius:6px" data-act="zoom" data-src="'+q.aimg[i]+'">':esc(t))+(cor?' <span class="tag ok" style="font-size:11px">Correta</span>':'')+(mine&&!cor?' <span class="tag bad" style="font-size:11px">Sua resposta</span>':'')+(mine&&cor?' <span class="tag ok" style="font-size:11px">Sua resposta</span>':'')+'</div></div>';}).join("");}
+  const r=S.ans[q.id];
+  return '<div style="margin-top:10px"><p style="margin:0 0 6px">'+esc(q.e)+'</p>'+qFigs(q)+alts+
+   (ab?'<div class="coment" style="margin-top:10px"><b>Resposta esperada:</b> '+esc(q.resp||"")+'</div>':'')+
+   '<div class="coment" style="margin-top:12px">'+(q.anul?'<span class="tag warn">Questão anulada</span> ':'')+'<b>Comentário</b><p style="margin:8px 0 0">'+esc(q.com)+'</p>'+
+   (q.tab&&q.tab.length?'<div class="resumo"><table><thead><tr>'+q.tab[0].map(h=>'<th>'+esc(h)+'</th>').join("")+'</tr></thead><tbody>'+q.tab.slice(1).map(x=>'<tr>'+x.map(c=>'<td>'+esc(c)+'</td>').join("")+'</tr>').join("")+'</tbody></table></div>':'')+
+   (q.tut?'<div class="tutor"><b>Tutor MedRise:</b> '+esc(q.tut)+'</div>':'')+'</div></div>';
+}
 function vErros(){
   const errs=Object.entries(S.ans).filter(([,r])=>!r.ok).map(([id])=>qById(id)).filter(Boolean);
   const by={};errs.forEach(q=>{(by[q.tema]=by[q.tema]||[]).push(q);});
   return '<div class="head"><div><h1>Caderno de Erros</h1><p class="sub">Toda questão que você erra, no banco ou em simulado, vem pra cá, agrupada por tema.</p></div>'+(errs.length?'<button class="btn" data-act="redo-errs">Refazer todas as erradas</button>':'')+'</div>'+
-  (errs.length?Object.entries(by).map(([t,qs])=>'<div class="card" style="margin-bottom:12px"><div class="row" style="justify-content:space-between;align-items:center"><h2>'+esc(t)+'</h2><span class="tag bad">'+qs.length+' erro(s)</span></div>'+qs.map(q=>'<p style="margin:10px 0 0">'+esc(q.e.slice(0,140))+'…</p><p class="sub" style="margin:4px 0 0">Gabarito: '+L[q.c]+' · '+esc(altTxt(q,q.c))+'</p>').join("")+'</div>').join(""):'<div class="empty">Nenhum erro por enquanto.</div>');
+  (errs.length?Object.entries(by).map(([t,qs])=>'<div class="card" style="margin-bottom:12px"><div class="row" style="justify-content:space-between;align-items:center"><h2>'+esc(t)+'</h2><span class="tag bad">'+qs.length+' erro(s)</span></div>'+qs.map(q=>{const r=S.ans[q.id]||{};const ab=q.tipo==="aberta";return '<details style="border-top:1px solid var(--line);padding:10px 0;margin-top:8px"><summary style="cursor:pointer"><span style="display:block">'+esc(q.e.slice(0,140))+'…</span><span class="sub" style="display:block;margin-top:4px">'+esc(q.banca+' '+q.ano)+' · '+(ab?'Resposta aberta':'Sua: '+(r.ch!=null&&r.ch>=0?L[r.ch]:'—')+' · Gabarito: '+corrL(q))+' · <b style="color:var(--teal,#0f766e)">Ver questão e comentário</b></span></summary>'+revBlock(q,r.ch)+'</details>';}).join("")+'</div>').join(""):'<div class="empty">Nenhum erro por enquanto.</div>');
 }
 function vSalvos(){
   const qs=S.saved.map(qById).filter(Boolean);
