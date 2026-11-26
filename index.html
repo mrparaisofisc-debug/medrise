@@ -852,7 +852,7 @@ function afterDossie(){
 }
 
 function curQ(){const r=route()[0];if(r==="sim"&&run)return qById(run.qs[run.i]);return filteredQ()[qf.idx];}
-function filteredQ(){const _e=espOf(),_m=focoMode();return Q.filter(q=>(!q.ined||q.esp===_e||qf.banca===q.banca)&&(!_m||inEspFocus(_e,q,_m))&&(!qf.banca||q.banca===qf.banca)&&(!qf.ano||String(q.ano)===String(qf.ano))&&(!qf.dif||DIFF[q.id]===qf.dif)&&(!qf.area||q.area===qf.area)&&(!qf.tema||q.tema===qf.tema)&&(!qf.status||(qf.status==="nao"&&!S.ans[q.id])||(qf.status==="erradas"&&S.ans[q.id]&&!S.ans[q.id].ok)||(qf.status==="certas"&&S.ans[q.id]&&S.ans[q.id].ok)||(qf.status==="salvas"&&S.saved.includes(q.id))));}
+function filteredQ(){const _e=espOf(),_m=focoMode();return Q.filter(q=>(!q.ined||q.esp===_e||qf.banca===q.banca)&&(!_m||inEspFocus(_e,q,_m))&&(!qf.banca||q.banca===qf.banca)&&(!qf.ano||String(q.ano)===String(qf.ano))&&(!qf.dif||DIFF[q.id]===qf.dif)&&(!qf.area||q.area===qf.area)&&(!qf.tema||q.tema===qf.tema)&&(!qf.status||(qf.keep&&qf.keep.includes(q.id))||(qf.status==="nao"&&!S.ans[q.id])||(qf.status==="erradas"&&S.ans[q.id]&&!S.ans[q.id].ok)||(qf.status==="certas"&&S.ans[q.id]&&S.ans[q.id].ok)||(qf.status==="salvas"&&S.saved.includes(q.id))));}
 const normTxt=t=>(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9%\s]/g," ");
 const STOP=new Set("para pela pelo com sem que dos das nos nas uma uns umas por como mais menos entre sobre apos ate deve sera pode ser esta este essa esse isso caso ou e de da do a o os as em no na ao aos se nao sim tipo qualquer pontua pontuam sinonimia resposta apenas outros outras outro outra deve".split(" "));
 function gradeOpen(q,txt){const ans=normTxt(txt);const aw=ans.split(/\s+/).filter(Boolean);if(!aw.length)return {nota:0,miss:[],ok:false,empty:true};
@@ -1213,9 +1213,9 @@ document.addEventListener("click",e=>{
   if(a.startsWith("ob-")){render();return;}
   // questions
   if(a==="pick"){if(qview.show)return;qview.sel=+t.dataset.i;render();return;}
-  if(a==="answer"){tutorChat={qid:null,hist:[],loading:false,err:""};const q=filteredQ()[qf.idx];if(q.tipo==="aberta"){const ta=$("#open-ans");qview.txt=ta?ta.value:"";if(qview.txt.trim()){const G=gradeOpen(q,qview.txt);S.ans[q.id]={ok:G.ok,ch:-1,ts:Date.now(),nota:G.nota,auto:1};save();}qview.show=true;render();return;}S.ans[q.id]={ok:isOk(q,qview.sel),ch:qview.sel,ts:Date.now()};save();qview.show=true;render();return;}
-  if(a==="open-grade"){const q=filteredQ()[qf.idx];S.ans[q.id]={ok:v==="1",ch:-1,ts:Date.now()};save();render();return;}
-  if(a==="qf-foco"){qf.foco=v;qf.idx=0;qf.tema="";qview={txt:"",sel:null,show:false,tutor:false,cut:qview.cut,ai:null,aiBusy:false};render();return;}
+  if(a==="answer"){tutorChat={qid:null,hist:[],loading:false,err:""};const q=filteredQ()[qf.idx];if(qf.status){qf.keep=(qf.keep||[]).concat(q.id);}if(q.tipo==="aberta"){const ta=$("#open-ans");qview.txt=ta?ta.value:"";if(qview.txt.trim()){const G=gradeOpen(q,qview.txt);S.ans[q.id]={ok:G.ok,ch:-1,ts:Date.now(),nota:G.nota,auto:1};save();}qview.show=true;render();return;}S.ans[q.id]={ok:isOk(q,qview.sel),ch:qview.sel,ts:Date.now()};save();qview.show=true;render();return;}
+  if(a==="open-grade"){const q=filteredQ()[qf.idx];if(qf.status){qf.keep=(qf.keep||[]).concat(q.id);}S.ans[q.id]={ok:v==="1",ch:-1,ts:Date.now()};save();render();return;}
+  if(a==="qf-foco"){qf.foco=v;qf.keep=null;qf.idx=0;qf.tema="";qview={txt:"",sel:null,show:false,tutor:false,cut:qview.cut,ai:null,aiBusy:false};render();return;}
   if(a==="sim-esp"){const e=espOf();if(!e)return;const m=ESP_MAP[e];const ok=q=>q.tipo!=="aberta"&&!q.anul&&!q.desat;const sh=a=>a.sort(()=>Math.random()-0.5);
     const T=sh(Q.filter(q=>ok(q)&&espKw(e,q)));const B=sh(Q.filter(q=>ok(q)&&(!q.ined&&m.base.includes(q.area))&&!espKw(e,q)));const nT=m.kw?Math.min(T.length,30):0;const qs=T.slice(0,nT).concat(B.slice(0,50-nT)).map(q=>q.id);sh(qs);
     run={sid:"esp",nome:"Simulado de "+e,qs,i:0,ans:{},start:Date.now(),end:Date.now()+qs.length*3*60000};location.hash="#sim";return;}
@@ -1264,7 +1264,7 @@ document.addEventListener("click",e=>{
 document.addEventListener("change",e=>{
   const t=e.target;
   if(t.dataset.vesp){vesp[t.dataset.vesp]=t.value;render();return;}
-  if(t.dataset.f){qf[t.dataset.f]=t.value;if(t.dataset.f==="area")qf.tema="";qf.idx=0;qview={txt:"",sel:null,show:false,tutor:false,cut:qview.cut,ai:null,aiBusy:false};render();return;}
+  if(t.dataset.f){qf[t.dataset.f]=t.value;qf.keep=null;if(t.dataset.f==="area")qf.tema="";qf.idx=0;qview={txt:"",sel:null,show:false,tutor:false,cut:qview.cut,ai:null,aiBusy:false};render();return;}
   if(t.dataset.act==="plan-done"){S.plan.done[t.dataset.k]=t.checked;save();return;}
   if(t.id==="p-esp"){const x=$("#p-espx");if(x){x.style.display=t.value==="Outra"?"":"none";if(t.value==="Outra")x.focus();}const w=$("#p-tipo-w");if(w)w.style.display=PREQ(t.value)?"":"none";return;}
   
