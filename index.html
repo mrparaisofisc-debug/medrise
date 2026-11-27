@@ -349,6 +349,7 @@ html{scroll-padding-top:76px}
   .main{padding:18px 14px 50px}
   .g2,.g3{grid-template-columns:minmax(0,1fr)}
 }
+.cf{margin-top:10px}.cf p{margin:6px 0;line-height:1.6}.cf-h{font-weight:700;margin:16px 0 4px}.cf-alt{list-style:none;padding:0;margin:4px 0}.cf-alt li{padding:8px 10px;border-radius:10px;margin:6px 0;line-height:1.55;font-size:15px}.cf-alt li.ok{background:#e7f6ef}.cf-alt li.no{background:rgba(127,127,127,.08)}.cf-box{border-radius:12px;padding:10px 14px;margin:14px 0}.cf-box p{margin:4px 0 0}.cf-box.peg{background:rgba(240,160,32,.12);border-left:4px solid #f0a020}.cf-box.ouro{background:rgba(230,184,0,.13);border-left:4px solid #e6b800}.cf-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 </style>
 </head>
 <body>
@@ -1031,8 +1032,7 @@ function qCard(q,mode){ // mode: 'bank' | 'sim'
     foot='<div class="row" style="margin-top:8px;justify-content:space-between"><div class="row" style="gap:8px">'+(!show?'<button class="btn" data-act="answer" '+(sel==null&&q.tipo!=="aberta"?"disabled":"")+'>'+(q.tipo==="aberta"?"Ver gabarito":"Responder")+'</button>':'')+
       (!show&&q.tipo!=="aberta"?'<button class="btn ghost'+(qview.guess?' on':'')+'" data-act="guess" aria-pressed="'+(qview.guess?'true':'false')+'" title="Opcional: marque se não tem certeza. Mesmo acertando, o tema vai pra revisão.">'+(qview.guess?'✓ Chutei':'Chutei')+'</button>':'')+
       '<button class="btn ghost" data-act="save-q" data-id="'+q.id+'">'+(S.saved.includes(q.id)?"★ Salva":"☆ Salvar")+'</button></div><div class="row" style="gap:8px"><button class="btn ghost" data-act="q-prev">Anterior</button><button class="btn dark" data-act="q-next">Próxima</button></div></div>';
-    if(show){foot+='<div class="coment"><div class="row" style="align-items:center;gap:10px">'+(q.anul?'<span class="tag warn">Questão anulada · resposta mais aceita: '+L[q.c]+'</span>':isOk(q,sel)?'<span class="tag ok">Você acertou</span>'+chuteBtn(q):'<span class="tag bad">Resposta correta: '+L[q.c]+'</span>')+'<b>Comentário</b></div>'+(S.ans[q.id]&&S.ans[q.id].pista?'<p class="sub" style="font-size:13px;margin:6px 0 0">Você usou '+S.ans[q.id].pista+' pista'+(S.ans[q.id].pista>1?'s':'')+(S.ans[q.id].ok?', então o tema vai pra revisão mesmo com o acerto.':'.')+'</p>':'')+motBox(q)+'<p style="margin:10px 0 0">'+esc(q.com)+'</p>'+
-      '<div class="resumo"><table><thead><tr>'+q.tab[0].map(h=>'<th>'+esc(h)+'</th>').join("")+'</tr></thead><tbody>'+q.tab.slice(1).map(r=>'<tr>'+r.map(c=>'<td>'+esc(c)+'</td>').join("")+'</tr>').join("")+'</tbody></table></div>'+
+    if(show){foot+='<div class="coment"><div class="row" style="align-items:center;gap:10px">'+(q.anul?'<span class="tag warn">Questão anulada · resposta mais aceita: '+L[q.c]+'</span>':isOk(q,sel)?'<span class="tag ok">Você acertou</span>'+chuteBtn(q):'<span class="tag bad">Resposta correta: '+L[q.c]+'</span>')+'<b>Comentário</b></div>'+(S.ans[q.id]&&S.ans[q.id].pista?'<p class="sub" style="font-size:13px;margin:6px 0 0">Você usou '+S.ans[q.id].pista+' pista'+(S.ans[q.id].pista>1?'s':'')+(S.ans[q.id].ok?', então o tema vai pra revisão mesmo com o acerto.':'.')+'</p>':'')+motBox(q)+comFull(q,(q.tab&&q.tab.length?'<div class="resumo"><table><thead><tr>'+q.tab[0].map(h=>'<th>'+esc(h)+'</th>').join("")+'</tr></thead><tbody>'+q.tab.slice(1).map(r=>'<tr>'+r.map(c=>'<td>'+esc(c)+'</td>').join("")+'</tr>').join("")+'</tbody></table></div>':''))+
       tutorBox(q)+'</div>';}
   }
   return '<div class="card"><div class="row" style="gap:8px;align-items:center"><span class="tag" style="background:'+AREA_COLOR[q.area]+'1A;color:'+AREA_COLOR[q.area]+'">'+esc(q.esp||q.area)+'</span><span class="tag gray">'+esc(q.tema)+'</span>'+(q.ined?'<span class="tag" style="background:#F3E8FF;color:#6B21A8" title="Questão escrita pela equipe MedRise para treino. Não é de prova oficial.">Inédita MedRise · não oficial</span>':'<span class="tag warn">'+esc(q.banca)+' '+q.ano+' · Q'+q.num+'</span>')+'<span class="tag gray">'+(DIFF[q.id]||"")+'</span><button class="btn ghost sm" style="margin-left:auto;padding:4px 10px;font-size:13px" data-act="speak" data-src="q" data-id="'+q.id+'" title="Ouvir a questão em voz alta">'+ic("play").replace('<svg','<svg width="14" height="14" style="vertical-align:-2px;margin-right:4px"')+'Ouvir</button></div>'+
@@ -1150,8 +1150,8 @@ function revBlock(q,a){
   const r=S.ans[q.id];
   return '<div style="margin-top:10px"><p style="margin:0 0 6px">'+esc(q.e)+'</p>'+qFigs(q)+alts+
    (ab?'<div class="coment" style="margin-top:10px"><b>Resposta esperada:</b> '+esc(q.resp||"")+'</div>':'')+
-   '<div class="coment" style="margin-top:12px">'+(q.anul?'<span class="tag warn">Questão anulada</span> ':'')+'<b>Comentário</b><p style="margin:8px 0 0">'+esc(q.com)+'</p>'+
-   (q.tab&&q.tab.length?'<div class="resumo"><table><thead><tr>'+q.tab[0].map(h=>'<th>'+esc(h)+'</th>').join("")+'</tr></thead><tbody>'+q.tab.slice(1).map(x=>'<tr>'+x.map(c=>'<td>'+esc(c)+'</td>').join("")+'</tr>').join("")+'</tbody></table></div>':'')+
+   '<div class="coment" style="margin-top:12px">'+(q.anul?'<span class="tag warn">Questão anulada</span> ':'')+'<b>Comentário</b>'+comFull(q,(q.tab&&q.tab.length?'<div class="resumo"><table><thead><tr>'+q.tab[0].map(h=>'<th>'+esc(h)+'</th>').join("")+'</tr></thead><tbody>'+q.tab.slice(1).map(x=>'<tr>'+x.map(c=>'<td>'+esc(c)+'</td>').join("")+'</tr>').join("")+'</tbody></table></div>':''))+
+
    (q.tut?'<div class="tutor"><b>Tutor MedRise:</b> '+esc(q.tut)+'</div>':'')+'</div></div>';
 }
 function vErros(){
@@ -1215,7 +1215,7 @@ function demoBox(){
   const alts=q.a.map((t,i)=>{let cl="alt";if(show){if(isOk(q,i))cl+=" right";else if(i===sel)cl+=" wrong";}else if(sel===i)cl+=" sel";return '<button class="'+cl+'" data-act="demo-pick" data-i="'+i+'"><span class="lt">'+L[i]+'</span><span>'+esc(t)+'</span></button>';}).join("");
   return '<div class="demo"><div class="demo-top"><div class="row" style="gap:10px;align-items:center">'+LOGO.replace('width="34" height="34"','width="22" height="22"')+'<b>MedRise · Demonstração</b><span class="tag gray">Sem login</span></div><div class="row" style="gap:6px">'+DEMO_Q.map((x,k)=>'<button class="dq '+(k===demo.i?"cur":(demo.show[x]?(demo.sel[x]===qById(x).c?"okk":"bad"):""))+'" data-act="demo-go" data-i="'+k+'" aria-label="Questão '+(k+1)+'">'+(k+1)+'</button>').join("")+'</div></div>'+
    '<div style="padding:18px"><div class="row" style="gap:8px"><span class="tag" style="background:'+AREA_COLOR[q.area]+'1A;color:'+AREA_COLOR[q.area]+'">'+esc(q.esp||q.area)+'</span><span class="tag gray">'+esc(q.tema)+'</span></div><p class="q-enun" style="font-size:15px">'+esc(q.e)+'</p>'+alts+
-   (show?'<div class="coment" style="margin-top:10px"><b>'+(isOk(q,sel)?'Acertou!':'Resposta correta: '+corrL(q))+'</b><p style="margin:6px 0 0">'+esc(q.com)+'</p><div class="tutor"><b>Tutor MedRise:</b> '+esc(q.tut)+'</div></div>':'')+
+   (show?'<div class="coment" style="margin-top:10px"><b>'+(isOk(q,sel)?'Acertou!':'Resposta correta: '+corrL(q))+'</b>'+comFull(q,'')+'<div class="tutor"><b>Tutor MedRise:</b> '+esc(q.tut)+'</div></div>':'')+
    '<div class="row" style="justify-content:space-between;margin-top:12px;align-items:center"><span class="sub">'+(answered?ok+' de '+answered+' certas':'Escolha uma alternativa')+'</span>'+(!show?'<button class="btn" data-act="demo-answer" '+(sel==null?"disabled":"")+'>Responder</button>':(demo.i<DEMO_Q.length-1?'<button class="btn dark" data-act="demo-go" data-i="'+(demo.i+1)+'">Próxima questão</button>':'<a class="btn" data-act="goto" data-v="planos">Gostei, quero acesso</a>'))+'</div></div></div>';
 }
 function vLanding(){
@@ -1359,6 +1359,23 @@ function render(){
 }
 window.addEventListener("hashchange",()=>{qview={txt:"",sel:null,show:false,tutor:false,cut:qview.cut,ai:null,aiBusy:false};render();window.scrollTo(0,0);});
 
+
+/* ===== Comentário completo (arquivos cf/<prova>.json, carregados sob demanda) ===== */
+const CF_V="1";const CF={},CF_LOAD={};
+function cfKey(q){return String(q.id).split("-")[0];}
+function cfGet(q){const k=cfKey(q);if(CF[k])return CF[k][q.id]||null;if(!CF_LOAD[k]){CF_LOAD[k]=1;fetch("cf/"+encodeURIComponent(k)+".json?v="+CF_V).then(r=>r.ok?r.json():{}).catch(()=>({})).then(d=>{CF[k]=d||{};if(CF[k][q.id])render();});}return null;}
+function cfTab(rows,tit){if(!rows||!rows.length)return "";return (tit?'<div class="cf-h">'+esc(tit)+'</div>':'')+'<div class="resumo"><table><thead><tr>'+rows[0].map(h=>'<th>'+esc(h)+'</th>').join("")+'</tr></thead><tbody>'+rows.slice(1).map(r=>'<tr>'+r.map(c=>'<td>'+esc(c)+'</td>').join("")+'</tr>').join("")+'</tbody></table></div>';}
+function comFull(q,oldTab){const f=cfGet(q);
+  if(!f)return '<p style="margin:10px 0 0">'+esc(q.com||"")+'</p>'+(oldTab||"");
+  const ok=Array.isArray(q.ok)?q.ok:[q.c];let h='<div class="cf">';
+  if(f.raz)h+='<div class="cf-h">Por que a '+(q.a&&q.a.length?L[q.c]:"resposta")+' está certa</div><p>'+esc(f.raz)+'</p>';
+  if(f.alt&&f.alt.length){h+='<div class="cf-h">Análise das alternativas</div><ul class="cf-alt">'+f.alt.map((x,i)=>{const c=i===q.c||ok.includes(i);return '<li class="'+(c?"ok":"no")+'"><b>'+L[i]+') '+(c?"Correta":"Errada")+'.</b> '+esc(x)+'</li>';}).join("")+'</ul>';}
+  if(f.tema&&f.tema.length)h+='<div class="cf-h">Entenda o tema</div>'+f.tema.map(x=>'<p>'+esc(x)+'</p>').join("");
+  (f.tabs||[]).forEach(x=>{h+=cfTab(x.r,x.t);});
+  if(f.peg)h+='<div class="cf-box peg"><b>Pegadinha de prova</b><p>'+esc(f.peg)+'</p></div>';
+  if(f.ouro)h+='<div class="cf-box ouro"><b>Dica de ouro</b><p>'+esc(f.ouro)+'</p></div>';
+  if(f.conc&&f.conc.length)h+='<div class="cf-tags">'+(f.sub?'<span class="tag gray">'+esc(f.sub)+'</span>':'')+f.conc.map(c=>'<span class="tag">'+esc(c)+'</span>').join("")+'</div>';
+  return h+'</div>';}
 /* ================= ACTIONS ================= */
 function finishSim(){
   if(!run)return;const by={};AREAS.forEach(a=>by[a]={t:0,o:0});let ok=0;
