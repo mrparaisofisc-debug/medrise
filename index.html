@@ -536,7 +536,7 @@ const SIMULADOS=[
  ...simsBanca("SES-DF","SES-DF 2026","sesdf26",2026),...simsBanca("SES-DF","SES-DF 2025","sesdf25",2025),...simsBanca("SES-DF","SES-DF 2024","sesdf24",2024),...simsBanca("SES-DF","SES-DF 2023","sesdf23",2023),...simsBanca("SES-DF","SES-DF 2022","sesdf22",2022),...simsBanca("SES-DF","SES-DF 2021","sesdf21",2021),
  ...simsBanca("USP-RP","USP-RP 2026","usprp26",2026),...simsBanca("USP-RP","USP-RP 2025","usprp25",2025),...simsBanca("USP-RP","USP-RP 2024","usprp24",2024),...simsBanca("USP-RP","USP-RP 2023","usprp23",2023),...simsBanca("USP-RP","USP-RP 2021","usprp21",2021),
  ...simsBanca("UNESP","UNESP 2026","unesp26",2026),...simsBanca("UNESP","UNESP 2025","unesp25",2025),...simsBanca("UNESP","UNESP 2024","unesp24",2024),...simsBanca("UNESP","UNESP 2023","unesp23",2023),...simsBanca("UNESP","UNESP 2022","unesp22",2022),...simsBanca("UNESP","UNESP 2021","unesp21",2021),
- ...simsBanca("UFPA","UFPA 2026","ufpa26",2026),...simsBanca("UFPA","UFPA 2025","ufpa25",2025),...simsBanca("UFPA","UFPA 2023","ufpa23",2023),...simsBanca("UFPA","UFPA 2022","ufpa22",2022),...simsBanca("UFPA","UFPA 2021","ufpa21",2021),simsBanca("UFPA","UFPA 2020","ufpa20",2020),simsBanca("UFPA","UFPA 2019","ufpa19",2019),simsBanca("UFPA","UFPA 2018","ufpa18",2018),simsBanca("UFPA","UFPA 2017","ufpa17",2017),simsBanca("UFPA","UFPA 2015","ufpa15",2015),simsBanca("UFPA","UFPA 2014","ufpa14",2014),simsBanca("UFPA","UFPA 2013","ufpa13",2013),simsBanca("UFPA","UFPA 2012","ufpa12",2012),
+ ...simsBanca("UFPA","UFPA 2026","ufpa26",2026),...simsBanca("UFPA","UFPA 2025","ufpa25",2025),...simsBanca("UFPA","UFPA 2023","ufpa23",2023),...simsBanca("UFPA","UFPA 2022","ufpa22",2022),...simsBanca("UFPA","UFPA 2021","ufpa21",2021),...simsBanca("UFPA","UFPA 2020","ufpa20",2020),...simsBanca("UFPA","UFPA 2019","ufpa19",2019),...simsBanca("UFPA","UFPA 2018","ufpa18",2018),...simsBanca("UFPA","UFPA 2017","ufpa17",2017),...simsBanca("UFPA","UFPA 2015","ufpa15",2015),...simsBanca("UFPA","UFPA 2014","ufpa14",2014),...simsBanca("UFPA","UFPA 2013","ufpa13",2013),...simsBanca("UFPA","UFPA 2012","ufpa12",2012),
  ...simsBanca("SMS-CURITIBA","SMS Curitiba 2027","smscur27",2027),
  ...simsBanca("UNESC","UNESC 2026","unesc26",2026),
  ...simsBanca("IPSEMG","IPSEMG 2026","ipsemg26",2026),
@@ -594,7 +594,7 @@ const KEY="medrise_v1";
 let S;
 function blank(){return {study:{},stA:{},stT:{},stPause:false,user:null,ans:{},saved:[],sims:[],hl:{},notes:[],cards:{},read:[],plan:{done:{}}};}
 function load(){try{const r=localStorage.getItem(KEY);S=r?Object.assign(blank(),JSON.parse(r)):blank();}catch(e){S=blank();}}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}try{schedulePush();}catch(e){}}
+function save(){try{if(run){S.run=Object.assign({},run,{left:Math.max(0,run.end-Date.now()),el:Math.max(0,(run._h||Date.now())-run.start)});delete S.run._h;}else S.run=null;}catch(e){}try{S.qf=qf;}catch(e){}try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}try{schedulePush();}catch(e){}}
 load();
 /* ===== Supabase: contas, sincronização, tutor IA, ranking ===== */
 const SB_URL="https://aqcdmrlhzrguvqgfpjtc.supabase.co",SB_KEY="sb_publishable_mivWPQEyQ7xsWYByyJbmpQ_OKN09KND";
@@ -603,7 +603,7 @@ const loadJS=src=>new Promise((ok,err)=>{const e=document.createElement("script"
 async function sbInit(){try{if(!window.supabase)await loadJS("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js");
   sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
   const {data}=await sb.auth.getSession();sbUser=data&&data.session?data.session.user:null;
-  if(sbUser)await pullState();
+  if(sbUser){await pullState();restoreRun();}
   if(sbUser&&!S.user){await finishPending();if(S.user)location.hash="#inicio";}
   sb.auth.onAuthStateChange((ev,ses)=>{sbUser=ses?ses.user:null;if(ev==="PASSWORD_RECOVERY"){auth.recovery=true;location.hash="#nova-senha";render();}});
 }catch(e){sb=null;}sbReady=true;render();}
@@ -740,6 +740,10 @@ let ob={ok:"",step:0,nome:"",tipo:"R1",esp:"",bancas:[],data:"",horas:20,fase:"I
 let qf={area:"",tema:"",status:"",banca:"",ano:"",dif:"",foco:"auto",idx:0};
 let qview={txt:"",sel:null,show:false,tutor:false,cut:{}};
 let run=null; // simulado em andamento
+function restoreRun(){try{if(!run&&S.run&&S.run.qs&&S.run.qs.length){const x=S.run;run=Object.assign({},x,{start:Date.now()-(x.el||0),end:Date.now()+(x.left||0)});delete run.left;delete run.el;}}catch(e){}}
+restoreRun();try{if(S.qf)Object.assign(qf,S.qf);}catch(e){}
+document.addEventListener("visibilitychange",()=>{if(!run)return;if(document.hidden){run._h=Date.now();}else if(run._h){const d=Date.now()-run._h;run.end+=d;run.start+=d;run._h=0;}});
+function simBanner(){if(!run)return "";const n=Object.keys(run.ans||{}).length;const left=Math.max(0,run._h?run.end-run._h:run.end-Date.now());return '<div class="card" style="margin-bottom:18px;border:2px solid var(--brand,#0e7c86)"><div class="row" style="justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><span class="tag">Simulado em andamento</span><h2 style="margin-top:8px">'+esc(run.nome)+'</h2><p class="sub" style="margin:4px 0 0">'+n+' de '+run.qs.length+' respondidas · '+Math.ceil(left/60000)+' min restantes · questão '+(run.i+1)+'</p></div><div class="row" style="gap:8px"><button class="btn ghost" data-act="sim-discard">Descartar</button><button class="btn" data-act="sim-resume">Continuar de onde parei</button></div></div></div>';}
 let flash={i:0,flip:false};
 
 /* ================= HELPERS ================= */
@@ -912,7 +916,7 @@ function vInicio(){
   const fracos=Object.entries(s.byTema).filter(([,v])=>v.t&&v.o/v.t<0.6).slice(0,4);
   const simPts=S.sims.slice(-8).map((x,i)=>({label:"S"+(S.sims.length-Math.min(8,S.sims.length)+i+1),value:Math.round(x.ok/x.total*100)}));
   const unread=AVISOS.filter(a=>!S.read.includes(a.id));
-  return '<div class="head"><div><h1>Olá, '+esc(u.nome)+'</h1><p class="sub">'+(u.tipo!=="R+"&&PREQ(u.esp)?"Rumo a "+esc(u.esp)+" · agora: acesso direto de "+esc(PREQ_TXT(PREQ(u.esp))):"Rumo a "+esc(u.esp))+' · '+u.bancas.map(esc).join(", ")+'</p></div><a class="btn" href="#questoes">Continuar estudando</a></div>'+
+  return simBanner()+'<div class="head"><div><h1>Olá, '+esc(u.nome)+'</h1><p class="sub">'+(u.tipo!=="R+"&&PREQ(u.esp)?"Rumo a "+esc(u.esp)+" · agora: acesso direto de "+esc(PREQ_TXT(PREQ(u.esp))):"Rumo a "+esc(u.esp))+' · '+u.bancas.map(esc).join(", ")+'</p></div><a class="btn" href="#questoes">Continuar estudando</a></div>'+
   '<div class="grid g3" style="margin-bottom:16px"><div class="card hero" style="grid-column:span 2"><div class="row" style="justify-content:space-between;align-items:center"><div><div class="sub" style="font-weight:600;letter-spacing:.1em;text-transform:uppercase;font-size:12px">Sua prova</div><div style="font-size:18px;font-weight:600;margin-top:4px">'+(u.data?fmtDate(u.data):"Defina a data no perfil")+'</div><p class="sub" style="margin:6px 0 0">Meta da semana: '+Math.round(u.horas*6)+' questões · '+u.horas+'h de estudo</p></div><div style="text-align:right">'+(d!=null?'<div class="count">'+Math.max(d,0)+'</div><div class="sub">dias restantes</div>':"")+'</div></div></div>'+
   '<div class="card" style="display:flex;align-items:center;gap:16px">'+donut(s.pct)+'<div><h3>Aproveitamento</h3><p class="sub" style="margin:4px 0 0">'+(s.tot?"Nas "+s.tot+" questões que você fez.":"Resolva questões pra ver seu índice.")+'</p></div></div></div>'+
   espCard()+stCard()+'<div class="grid g6" style="margin-bottom:16px">'+kp.map(k=>'<div class="card pad-s kpi"><div class="ic">'+ic(k[0])+'</div><div class="v">'+k[2]+'</div><div class="l">'+k[1]+'</div></div>').join("")+'</div>'+
@@ -1060,7 +1064,7 @@ function adaptPick(n){const s=stats();const u=S.user||{};const F=temaFreq((u.ban
 function weakTemas(){const s=stats();return Object.entries(s.byTema).filter(([,v])=>v.t&&v.o/v.t<0.6).sort((a,b)=>a[1].o/a[1].t-b[1].o/b[1].t).map(([t])=>t);}
 function vSimulados(){
   const wt=weakTemas();
-  return '<div class="head"><div><h1>Simulados</h1><p class="sub">Prova com cronômetro, gabarito no final, nota por área e ranking anônimo.</p></div></div>'+
+  return simBanner()+'<div class="head"><div><h1>Simulados</h1><p class="sub">Prova com cronômetro, gabarito no final, nota por área e ranking anônimo.</p></div></div>'+
   '<div class="card hero" style="margin-bottom:18px"><div class="row" style="justify-content:space-between;align-items:center;gap:16px"><div style="flex:1;min-width:240px"><span class="tag">Novo</span><h2 style="margin-top:8px;color:#fff">Simulado adaptativo</h2><p class="sub" style="margin:6px 0 0">O sistema olha onde você erra e monta 20 questões com mais peso nos seus temas fracos e nos temas que mais caem nas suas bancas. A cada simulado ele se ajusta de novo.'+(wt.length?' Agora o foco vai ser: <b>'+wt.slice(0,4).map(esc).join(", ")+'</b>.':' Como você ainda tem poucas respostas, ele começa pelos temas mais cobrados.')+'</p></div><button class="btn" data-act="sim-adapt">Gerar simulado adaptativo</button></div></div>'+
   (espOf()?'<div class="card" style="margin-bottom:18px"><div class="row" style="justify-content:space-between;align-items:center;gap:16px"><div><span class="tag">Sua especialidade</span><h2 style="margin-top:8px">Simulado de '+esc(espOf())+'</h2><p class="sub" style="margin:4px 0 0">50 questões'+(ESP_MAP[espOf()].kw?': '+Math.min(30,Q.filter(q=>q.tipo!=="aberta"&&!q.anul&&espKw(espOf(),q)).length)+' de temas de '+esc(espOf())+' e o restante de '+ESP_MAP[espOf()].base.join(" e ")+', que é a base cobrada':' de '+ESP_MAP[espOf()].base.join(" e "))+'.</p></div><button class="btn" data-act="sim-esp">Começar</button></div></div>':'')+
   '<div class="card" style="margin-bottom:18px"><span class="tag">Novo</span><h2 style="margin-top:8px">Simulados em níveis</h2><p class="sub" style="margin:4px 0 12px">20 questões oficiais (4 de cada grande área), separadas por dificuldade estimada. Comece pelo nível 1 e vá subindo. A dificuldade é estimada pelo tipo de questão (tamanho, imagem, pegadinhas como "EXCETO"), não pela porcentagem real de acerto.</p><div class="row" style="gap:10px;flex-wrap:wrap">'+[["1","Nível 1 · Aquecimento"],["2","Nível 2 · Intermediário"],["3","Nível 3 · Nível prova"]].map(x=>{const done=S.sims.filter(y=>y.sid==="nivel"+x[0]);const best=done.length?Math.max(...done.map(y=>Math.round(y.ok/y.total*100))):null;return '<button class="btn'+(x[0]==="1"?'':' ghost')+'" data-act="sim-nivel" data-v="'+x[0]+'">'+x[1]+(best!=null?' · melhor '+best+'%':'')+'</button>';}).join("")+'</div></div>'+
@@ -1350,6 +1354,7 @@ function render(){
   }
   root.innerHTML=shell(html);
   if(r==="dossie")afterDossie();
+  if(r==="sim"&&run)save();
   clearInterval(tick);if(r==="sim"&&run){tick=setInterval(()=>{const el=$("#timer");if(!el){clearInterval(tick);return;}const left=Math.max(0,run.end-Date.now());el.textContent=String(Math.floor(left/60000)).padStart(2,"0")+":"+String(Math.floor(left/1000)%60).padStart(2,"0");if(left<=0){clearInterval(tick);finishSim();}},1000);}
 }
 window.addEventListener("hashchange",()=>{qview={txt:"",sel:null,show:false,tutor:false,cut:qview.cut,ai:null,aiBusy:false};render();window.scrollTo(0,0);});
@@ -1360,7 +1365,7 @@ function finishSim(){
   run.qs.forEach(id=>{const q=qById(id);const a=run.ans[id];const r=isOk(q,a);by[q.area].t++;if(r){ok++;by[q.area].o++;}if(a!=null){S.ans[id]={ok:r,ch:a,ts:Date.now()};if(r&&run.flag&&run.flag[id])S.ans[id].chute=1;}else S.ans[id]={ok:false,ch:null,ts:Date.now()};});
   const d=new Date();S.sims.push({sid:run.sid,nome:run.nome,dt:d.toLocaleDateString("pt-BR"),ok,total:run.qs.length,by,qs:run.qs,ans:run.ans,flag:run.flag||{},secs:Math.round((Date.now()-run.start)/1000)});
   try{if(sb&&sbUser&&run.qs.length>=10)sb.from("sim_results").insert({user_id:sbUser.id,sid:run.sid,nome:run.nome,ok,total:run.qs.length,pct:Math.round(ok/run.qs.length*1000)/10,secs:Math.round((Date.now()-run.start)/1000)}).then(()=>{rk.data=null;});}catch(e){}
-  save();const idx=S.sims.length-1;run=null;location.hash="#res/"+idx;
+  run=null;S.run=null;save();const idx=S.sims.length-1;location.hash="#res/"+idx;
 }
 document.addEventListener("click",e=>{
   const t=e.target.closest("[data-act]");if(!t)return;const a=t.dataset.act,v=t.dataset.v;
@@ -1429,10 +1434,12 @@ document.addEventListener("click",e=>{
   if(a==="guess"){qview.guess=!qview.guess;render();return;}
   if(a==="chute-toggle"){const id=t.dataset.id;const r=S.ans[id];if(r&&r.ok){if(r.chute)delete r.chute;else r.chute=1;save();render();keepOpen(id);}return;}
   if(a==="sim-flag"){run.flag=run.flag||{};const id=run.qs[run.i];if(run.flag[id])delete run.flag[id];else run.flag[id]=1;render();return;}
-  if(a==="sim-pick"){run.ans[run.qs[run.i]]=+t.dataset.i;render();return;}
-  if(a==="sim-next"){run.i=Math.min(run.qs.length-1,run.i+1);render();return;}
-  if(a==="sim-prev"){run.i=Math.max(0,run.i-1);render();return;}
-  if(a==="sim-go"){run.i=+t.dataset.i;render();return;}
+  if(a==="sim-resume"){location.hash="#sim";render();return;}
+  if(a==="sim-discard"){if(!t.dataset.sure){t.dataset.sure="1";t.textContent="Descartar mesmo?";return;}run=null;S.run=null;save();render();return;}
+  if(a==="sim-pick"){run.ans[run.qs[run.i]]=+t.dataset.i;save();render();return;}
+  if(a==="sim-next"){run.i=Math.min(run.qs.length-1,run.i+1);save();render();return;}
+  if(a==="sim-prev"){run.i=Math.max(0,run.i-1);save();render();return;}
+  if(a==="sim-go"){run.i=+t.dataset.i;save();render();return;}
   if(a==="sim-finish"){const miss=run.qs.length-Object.keys(run.ans).length;if(miss>0&&!t.dataset.sure){t.dataset.sure="1";t.textContent="Faltam "+miss+". Entregar mesmo assim?";return;}finishSim();return;}
   // others
   if(a==="ics"){icsProva(v);toast("Arquivo da agenda baixado: abra pra salvar a prova "+v);return;}
