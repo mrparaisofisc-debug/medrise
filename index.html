@@ -350,7 +350,7 @@ html{scroll-padding-top:76px}
   .g2,.g3{grid-template-columns:minmax(0,1fr)}
 }
 .cf{margin-top:10px}.cf p{margin:6px 0;line-height:1.6}.cf-h{font-weight:700;margin:16px 0 4px}.cf-alt{list-style:none;padding:0;margin:4px 0}.cf-alt li{padding:8px 10px;border-radius:10px;margin:6px 0;line-height:1.55;font-size:15px}.cf-alt li.ok{background:#e7f6ef}.cf-alt li.no{background:rgba(127,127,127,.08)}.cf-box{border-radius:12px;padding:10px 14px;margin:14px 0}.cf-box p{margin:4px 0 0}.cf-box.peg{background:rgba(240,160,32,.12);border-left:4px solid #f0a020}.cf-box.ouro{background:rgba(230,184,0,.13);border-left:4px solid #e6b800}.cf-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
-/*feat-css*/.cx-box{margin:12px 0 2px;padding:10px 12px;border:1px solid #CDEFEA;border-radius:12px;background:#F4FBFA}.cx-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line);flex-wrap:wrap}.cx-box .cx-row:first-of-type{border-top:0}.btn.on{background:var(--ink);color:#fff;border-color:var(--ink)}.plan-items{display:flex;flex-direction:column;gap:10px}.plan-it{display:flex;gap:12px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:12px;background:#FAFDFC;flex-wrap:wrap}.fc-back{margin-top:12px;padding:12px 14px;border-radius:12px;background:#EEF7FF;border:1px solid #CFE3F7}.fc-peek{background:#F6FBFA;border-radius:10px;padding:8px 12px}.seg a{border:0;background:#fff;padding:9px 16px;font-weight:600;color:var(--ink);cursor:pointer;display:inline-block}.seg a.on{background:var(--ink);color:#fff}/*feat-css-end*/</style>
+/*feat-css*/.cx-box{margin:12px 0 2px;padding:10px 12px;border:1px solid #CDEFEA;border-radius:12px;background:#F4FBFA}.cx-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line);flex-wrap:wrap}.cx-box .cx-row:first-of-type{border-top:0}.btn.on{background:var(--ink);color:#fff;border-color:var(--ink)}.plan-items{display:flex;flex-direction:column;gap:10px}.plan-it{display:flex;gap:12px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:12px;background:#FAFDFC;flex-wrap:wrap}.fc-back{margin-top:12px;padding:12px 14px;border-radius:12px;background:#EEF7FF;border:1px solid #CFE3F7}.fc-peek{background:#F6FBFA;border-radius:10px;padding:8px 12px}.seg a{border:0;background:#fff;padding:9px 16px;font-weight:600;color:var(--ink);cursor:pointer;display:inline-block}.seg a.on{background:var(--ink);color:#fff}@media (max-width:800px){.side{height:100vh;height:100dvh;max-height:100dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-bottom:calc(48px + env(safe-area-inset-bottom))}.side>*{flex-shrink:0}.side.open{box-shadow:0 0 0 100vmax rgba(3,20,26,.5)}body.menu-open{overflow:hidden}.plan-it .ic-c{display:none}.plan-it>div{flex:1 1 100%}.plan-it .btn{width:100%;justify-content:center}.plan-card .row>div[style*='text-align:right']{text-align:left!important}}.seg.tabs{display:flex;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}.seg.tabs a{white-space:nowrap;flex:none}/*feat-css-end*/</style>
 </head>
 <body>
 <div id="root"></div>
@@ -362,7 +362,7 @@ html{scroll-padding-top:76px}
 </div>
 <div class="toast" id="toast"></div>
 <script>(function(){const P={};function pk(n){return n.split('-')[0];}document.addEventListener('error',function(e){const t=e.target;if(!t||t.tagName!=='IMG')return;const src=t.getAttribute('src')||'';const m=src.match(/img\/q\/([^?#]+)$/);if(!m||t.dataset.pk)return;t.dataset.pk='1';const f=m[1],k=pk(f);(P[k]=P[k]||fetch('img/pack/'+k+'.json').then(r=>r.ok?r.json():{}).catch(()=>({})) ).then(d=>{if(d[f]){t.src=d[f];document.querySelectorAll('[data-src="'+src+'"]').forEach(z=>z.dataset.src=d[f]);}});},true);})();</script>
-<script src="tags.js?v=202611271751"></script><script>
+<script src="tags.js?v=202611271807"></script><script>
 (function(){
 "use strict";
 /* ================= ICONS ================= */
@@ -881,7 +881,7 @@ function shell(content){
     let pill='';if(id==="avisos"&&unread)pill='<span class="pill">'+unread+'</span>';if(id==="erros"&&errN)pill='<span class="pill">'+errN+'</span>';
     nav+='<a href="#'+id+'" class="'+((r===id||(r==="dossie"&&id==="dossies")||(r==="sim"&&id==="simulados")||(r==="res"&&id==="simulados"))?"on":"")+'">'+ic(icn)+lab+pill+'</a>';});nav+='</nav>';});
   return '<div class="topbar">'+LOGO_FULL(34,true)+'<div class="row" style="gap:8px;align-items:center"><button class="tb-clk" data-act="goto-inicio" aria-label="Tempo de estudo hoje"><span class="st-dot"></span><span class="st-clk">'+hms(stToday())+'</span></button><button data-act="menu" aria-label="Abrir menu">'+ic("menu")+'</button></div></div>'+
-   '<div class="app"><aside class="side" id="side"><div class="brand">'+LOGO_FULL(40,true)+'</div>'+stWidget()+nav+'</aside><main class="main" id="main">'+content+'</main></div>';
+   '<div class="app"><aside class="side'+(document.body.classList.contains("menu-open")?" open":"")+'" id="side"><div class="brand">'+LOGO_FULL(40,true)+'</div>'+stWidget()+nav+'</aside><main class="main" id="main">'+content+'</main></div>';
 }
 
 /* ================= ONBOARDING ================= */
@@ -920,7 +920,7 @@ function vInicio(){
   return simBanner()+'<div class="head"><div><h1>Olá, '+esc(u.nome)+'</h1><p class="sub">'+(u.tipo!=="R+"&&PREQ(u.esp)?"Rumo a "+esc(u.esp)+" · agora: acesso direto de "+esc(PREQ_TXT(PREQ(u.esp))):"Rumo a "+esc(u.esp))+' · '+u.bancas.map(esc).join(", ")+'</p></div><button class="btn" data-act="plan-go">Começar o treino do dia</button></div>'+
   '<div class="grid g3" style="margin-bottom:16px"><div class="card hero" style="grid-column:span 2"><div class="row" style="justify-content:space-between;align-items:center"><div><div class="sub" style="font-weight:600;letter-spacing:.1em;text-transform:uppercase;font-size:12px">Sua prova</div><div style="font-size:18px;font-weight:600;margin-top:4px">'+(u.data?fmtDate(u.data):"Defina a data no perfil")+'</div><p class="sub" style="margin:6px 0 0">Meta da semana: '+Math.round(u.horas*60/5)+' questões · '+u.horas+'h de estudo</p></div><div style="text-align:right">'+(d!=null?'<div class="count">'+Math.max(d,0)+'</div><div class="sub">dias restantes</div>':"")+'</div></div></div>'+
   '<div class="card" style="display:flex;align-items:center;gap:16px">'+donut(s.pct)+'<div><h3>Aproveitamento</h3><p class="sub" style="margin:4px 0 0">'+(s.tot?"Nas "+s.tot+" questões que você fez.":"Resolva questões pra ver seu índice.")+'</p></div></div></div>'+
-  planCard()+planCard()+espCard()+stCard()+'<div class="grid g6" style="margin-bottom:16px">'+kp.map(k=>'<div class="card pad-s kpi"><div class="ic">'+ic(k[0])+'</div><div class="v">'+k[2]+'</div><div class="l">'+k[1]+'</div></div>').join("")+'</div>'+
+  planCard()+espCard()+stCard()+'<div class="grid g6" style="margin-bottom:16px">'+kp.map(k=>'<div class="card pad-s kpi"><div class="ic">'+ic(k[0])+'</div><div class="v">'+k[2]+'</div><div class="l">'+k[1]+'</div></div>').join("")+'</div>'+
   '<div class="grid g2" style="margin-bottom:16px"><div class="card chart"><h2>Acerto por grande área</h2><p class="sub" style="margin:4px 0 10px">Onde você está forte e onde precisa reforçar.</p>'+(s.tot?barChart(areaItems,{max:100,unit:"%",label:"Acerto por área"}):'<div class="empty">Resolva questões pra liberar este gráfico.</div>')+'</div>'+
   '<div class="card chart"><h2>Evolução nos simulados</h2><p class="sub" style="margin:4px 0 10px">Nota de cada simulado, em %. A linha tracejada é uma referência de 70%.</p>'+(simPts.length?lineChart(simPts,{goal:70,goalLabel:"referência 70%",unit:"%",label:"Evolução"}):'<div class="empty">Faça seu primeiro simulado pra ver sua evolução. <br><a href="#simulados">Ir para simulados</a></div>')+'</div></div>'+
   '<div class="grid g3"><div class="card"><h2>Temas pra reforçar</h2>'+(fracos.length?'<ul style="padding-left:18px;margin:10px 0 0">'+fracos.map(([t,v])=>'<li style="margin-bottom:6px"><b>'+esc(t)+'</b> <span class="sub">('+Math.round(v.o/v.t*100)+'% de acerto)</span></li>').join("")+'</ul><a class="btn sm ghost" style="margin-top:10px" href="#erros">Refazer erros</a>':'<p class="sub">Nenhum tema fraco ainda. Continue resolvendo questões.</p>')+'</div>'+
@@ -971,7 +971,7 @@ function vDossie(id){
   if(d.status!=="ok"){return '<a href="#dossies" class="sub">← Dossiês</a><div class="head" style="margin-top:8px"><div><h1>'+esc(d.nome)+'</h1><p class="sub">'+esc(d.inst)+'</p></div></div><div class="card"><span class="tag warn">Em produção</span><h2 style="margin-top:10px">Este dossiê está sendo montado</h2><p class="sub">Estamos analisando as provas oficiais de '+esc(d.inst)+' e um médico revisa tudo antes de publicar. Enquanto isso, veja o <a href="#dossie/enare">Dossiê ENAMED/ENARE</a>.</p></div>';}
   const html=S.hl[d.id]||dossHTML(d);
   return '<a href="#dossies" class="sub">← Dossiês</a><div class="head" style="margin-top:8px"><div><h1>'+esc(d.nome)+' '+d.anos+'</h1><p class="sub">Selecione qualquer trecho pra grifar em 3 cores ou anotar. Tudo fica salvo em "Salvos e Grifos".</p></div><div class="row"><button class="btn ghost sm" data-act="speak" data-src="doss">'+ic("play").replace('<svg','<svg width="16" height="16"')+' Ouvir resumo</button><button class="btn ghost sm" data-act="hl-clear" data-id="'+d.id+'">Limpar grifos</button><a class="btn sm" href="#questoes">Fazer as questões desta banca</a></div></div>'+
-  parecidasCard(d.banca,true)+parecidasCard(d.banca,true)+'<div class="row" style="align-items:flex-start;flex-wrap:nowrap;gap:28px"><article class="card doss" id="doss" data-id="'+d.id+'" style="flex:1;min-width:0">'+html+'</article>'+
+  parecidasCard(d.banca,true)+'<div class="row" style="align-items:flex-start;flex-wrap:nowrap;gap:28px"><article class="card doss" id="doss" data-id="'+d.id+'" style="flex:1;min-width:0">'+html+'</article>'+
   '<aside style="width:220px;flex:none;position:sticky;top:20px" class="toc card pad-s"><b>Neste dossiê</b>'+[["d-raio","Raio-X da banca"],["d-top","Temas cobrados"],["d-resumo","Resumo"],["d-relampago","Questões relâmpago"],["d-nao","O que não cai"],["d-vespera","Checklist da véspera"]].map(x=>'<a href="javascript:void(0)" data-act="goto" data-v="'+x[0]+'">'+x[1]+'</a>').join("")+'</aside></div>';
 }
 function afterDossie(){
@@ -981,7 +981,7 @@ function afterDossie(){
 }
 
 function curQ(){const r=route()[0];if(r==="sim"&&run)return qById(run.qs[run.i]);return filteredQ()[qf.idx];}
-function filteredQ(){if(qf.list&&qf.list.length)return qf.list.map(qById).filter(Boolean);if(qf.list&&qf.list.length)return qf.list.map(qById).filter(Boolean);const _e=espOf(),_m=focoMode();return Q.filter(q=>!q.dup&&(!q.ined||q.esp===_e||qf.banca===q.banca)&&(!_m||inEspFocus(_e,q,_m))&&(!qf.banca||q.banca===qf.banca)&&(!qf.ano||String(q.ano)===String(qf.ano))&&(!qf.dif||DIFF[q.id]===qf.dif)&&(!qf.area||q.area===qf.area)&&(!qf.tema||q.tema===qf.tema)&&(!qf.status||(qf.keep&&qf.keep.includes(q.id))||(qf.status==="nao"&&!S.ans[q.id])||(qf.status==="erradas"&&S.ans[q.id]&&!S.ans[q.id].ok)||(qf.status==="revisar"&&S.ans[q.id]&&(!S.ans[q.id].ok||S.ans[q.id].chute))||(qf.status==="certas"&&S.ans[q.id]&&S.ans[q.id].ok)||(qf.status==="salvas"&&S.saved.includes(q.id))));}
+function filteredQ(){if(qf.list&&qf.list.length)return qf.list.map(qById).filter(Boolean);const _e=espOf(),_m=focoMode();return Q.filter(q=>!q.dup&&(!q.ined||q.esp===_e||qf.banca===q.banca)&&(!_m||inEspFocus(_e,q,_m))&&(!qf.banca||q.banca===qf.banca)&&(!qf.ano||String(q.ano)===String(qf.ano))&&(!qf.dif||DIFF[q.id]===qf.dif)&&(!qf.area||q.area===qf.area)&&(!qf.tema||q.tema===qf.tema)&&(!qf.status||(qf.keep&&qf.keep.includes(q.id))||(qf.status==="nao"&&!S.ans[q.id])||(qf.status==="erradas"&&S.ans[q.id]&&!S.ans[q.id].ok)||(qf.status==="revisar"&&S.ans[q.id]&&(!S.ans[q.id].ok||S.ans[q.id].chute))||(qf.status==="certas"&&S.ans[q.id]&&S.ans[q.id].ok)||(qf.status==="salvas"&&S.saved.includes(q.id))));}
 const normTxt=t=>(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9%\s]/g," ");
 const STOP=new Set("para pela pelo com sem que dos das nos nas uma uns umas por como mais menos entre sobre apos ate deve sera pode ser esta este essa esse isso caso ou e de da do a o os as em no na ao aos se nao sim tipo qualquer pontua pontuam sinonimia resposta apenas outros outras outro outra deve".split(" "));
 function gradeOpen(q,txt){const ans=normTxt(txt);const aw=ans.split(/\s+/).filter(Boolean);if(!aw.length)return {nota:0,miss:[],ok:false,empty:true};
@@ -1354,7 +1354,7 @@ function vCaderno(tab){cxInit();tab=tab||"hoje";const due=cxDue();const act=cxAc
     body=it?'<div class="card flash" data-act="flip" role="button" tabindex="0">'+(flash.flip?'<div style="text-align:left"><div class="sub" style="font-size:13px;margin-bottom:8px">'+esc(kTema(+it[0]))+'</div><b>'+esc(kN(+it[0]))+'</b>'+fcBack(+it[0])+'</div>':'<div><div class="sub" style="font-size:13px;margin-bottom:8px">'+esc(kTema(+it[0]))+' · toque pra virar</div><b style="font-size:20px">'+esc(kN(+it[0]))+'</b><p class="sub">O que você precisa lembrar sobre isso?</p></div>')+'</div><div class="row" style="justify-content:space-between;margin-top:12px;align-items:center"><span class="sub">'+(i+1)+' de '+L.length+' · só os conceitos que você marcou como "Faltou" viram flashcard</span><div class="row" style="gap:8px"><button class="btn ghost" data-act="fc-nav" data-v="-1">Anterior</button><button class="btn" data-act="fc-nav" data-v="1">Próximo</button></div></div>':'<div class="empty">Nenhum flashcard. Quando errar uma questão, marque "Faltou" nos conceitos que você não sabia.</div>';}
   if(tab==="questoes")body=vErros().replace(/<div class="head">[\s\S]*?<\/div><\/div>/,"");
   return '<div class="head"><div><h1>Caderno de Erros</h1><p class="sub">Um caderno só, por conceito. Errou ou chutou? Os conceitos da questão voltam em 7, 30 e 90 dias (mais cedo perto da prova), com uma questão-irmã. Acertou as 3 revisões, o conceito sai do caderno.</p></div><div class="row" style="gap:8px"><span class="tag ok">'+dom+' dominado'+(dom===1?'':'s')+'</span></div></div>'+
-   '<div class="seg" style="margin-bottom:14px;flex-wrap:wrap">'+tabs.map(([v,l])=>'<a class="'+(tab===v?"on":"")+'" href="#erros/'+v+'" style="text-decoration:none">'+l+'</a>').join("")+'</div>'+body;}
+   '<div class="seg tabs" style="margin-bottom:14px">'+tabs.map(([v,l])=>'<a class="'+(tab===v?"on":"")+'" href="#erros/'+v+'" style="text-decoration:none">'+l+'</a>').join("")+'</div>'+body;}
 /* ===== Motor de plano único: Seu plano de hoje (A1 + A4 + B6) ===== */
 function plInit(){if(!S.pl)S.pl={start:dayKey(),days:{}};return S.pl;}
 function doneOn(dk){let n=0;Object.values(S.ans).forEach(r=>{if(r.ts&&dayKey(new Date(r.ts))===dk&&!r.rv)n++;});return n+((S.rvLog||{})[dk]||{n:0}).n;}
@@ -1424,6 +1424,8 @@ function featClick(a,v,t,e){
   if(a==="rv-more"){S.rvMore=dayKey();save();rv={k:null};render();return true;}
   if(a==="fc-nav"){const n=cxActive().filter(([,c])=>c.fc).length||1;flash.i=(flash.i+(+v)+n)%n;flash.flip=false;render();return true;}
   return false;}
+document.addEventListener("click",e=>{const sd=document.getElementById("side");if(!sd)return;if(e.target.closest('[data-act="menu"]')){setTimeout(()=>document.body.classList.toggle("menu-open",sd.classList.contains("open")),0);return;}if(sd.classList.contains("open")){if(!sd.contains(e.target)){e.preventDefault();e.stopPropagation();sd.classList.remove("open");document.body.classList.remove("menu-open");}else if(e.target.closest("a[href]")){sd.classList.remove("open");document.body.classList.remove("menu-open");}}},true);
+window.addEventListener("hashchange",()=>document.body.classList.remove("menu-open"));
 /*feat-end*/
 /* ================= RENDER ================= */
 let tick=null;
@@ -1485,12 +1487,12 @@ function comFull(q,oldTab){const f=cfGet(q);
 function finishSim(){
   if(!run)return;const by={};AREAS.forEach(a=>by[a]={t:0,o:0});let ok=0;
   run.qs.forEach(id=>{const q=qById(id);const a=run.ans[id];const r=isOk(q,a);by[q.area].t++;if(r){ok++;by[q.area].o++;}if(a!=null){S.ans[id]={ok:r,ch:a,ts:Date.now()};if(r&&run.flag&&run.flag[id])S.ans[id].chute=1;}else S.ans[id]={ok:false,ch:null,ts:Date.now()};});
-  run.qs.forEach(id=>onAnswered(id));run.qs.forEach(id=>onAnswered(id));const d=new Date();S.sims.push({sid:run.sid,nome:run.nome,dt:d.toLocaleDateString("pt-BR"),ok,total:run.qs.length,by,qs:run.qs,ans:run.ans,flag:run.flag||{},secs:Math.round((Date.now()-run.start)/1000)});
+  run.qs.forEach(id=>onAnswered(id));const d=new Date();S.sims.push({sid:run.sid,nome:run.nome,dt:d.toLocaleDateString("pt-BR"),ok,total:run.qs.length,by,qs:run.qs,ans:run.ans,flag:run.flag||{},secs:Math.round((Date.now()-run.start)/1000)});
   try{if(sb&&sbUser&&run.qs.length>=10)sb.from("sim_results").insert({user_id:sbUser.id,sid:run.sid,nome:run.nome,ok,total:run.qs.length,pct:Math.round(ok/run.qs.length*1000)/10,secs:Math.round((Date.now()-run.start)/1000)}).then(()=>{rk.data=null;});}catch(e){}
   run=null;S.run=null;save();const idx=S.sims.length-1;location.hash="#res/"+idx;
 }
 document.addEventListener("click",e=>{
-  const t=e.target.closest("[data-act]");if(!t)return;const a=t.dataset.act,v=t.dataset.v;if(featClick(a,v,t,e))return;if(featClick(a,v,t,e))return;
+  const t=e.target.closest("[data-act]");if(!t)return;const a=t.dataset.act,v=t.dataset.v;if(featClick(a,v,t,e))return;
   if(a==="st-toggle"){S.stPause=!S.stPause;save();stPaint();return;}
   if(a==="goto-inicio"){location.hash="#inicio";return;}
   if(a==="zoom"){e.preventDefault();e.stopPropagation();const z=document.createElement("div");z.id="zoom";z.innerHTML='<img src="'+t.dataset.src+'" alt="">';z.onclick=()=>z.remove();document.body.appendChild(z);return;}
@@ -1577,7 +1579,7 @@ document.addEventListener("click",e=>{
 document.addEventListener("change",e=>{
   const t=e.target;
   if(t.dataset.vesp){vesp[t.dataset.vesp]=t.value;render();return;}
-  if(t.dataset.f){qf[t.dataset.f]=t.value;qf.keep=null;qf.list=null;qf.listName="";qf.list=null;qf.listName="";if(t.dataset.f==="area")qf.tema="";qf.idx=0;qview={txt:"",sel:null,show:false,tutor:false,cut:qview.cut,ai:null,aiBusy:false};render();return;}
+  if(t.dataset.f){qf[t.dataset.f]=t.value;qf.keep=null;qf.list=null;qf.listName="";if(t.dataset.f==="area")qf.tema="";qf.idx=0;qview={txt:"",sel:null,show:false,tutor:false,cut:qview.cut,ai:null,aiBusy:false};render();return;}
   if(t.dataset.act==="plan-done"){S.plan.done[t.dataset.k]=t.checked;save();return;}
   if(t.id==="p-esp"){const x=$("#p-espx");if(x){x.style.display=t.value==="Outra"?"":"none";if(t.value==="Outra")x.focus();}const w=$("#p-tipo-w");if(w)w.style.display=PREQ(t.value)?"":"none";return;}
   
