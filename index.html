@@ -1573,7 +1573,7 @@ window.addEventListener("hashchange",()=>{qview={txt:"",sel:null,show:false,tuto
 
 
 /* ===== Comentário completo (arquivos cf/<prova>.json, carregados sob demanda) ===== */
-const CF_V="3";const CF={},CF_LOAD={};
+const CF_V="4";const CF={},CF_LOAD={};
 function cfKey(q){return String(q.id).split("-")[0];}
 function cfGet(q){const k=cfKey(q);if(CF[k])return CF[k][q.id]||null;if(!CF_LOAD[k]){CF_LOAD[k]=1;fetch("cf/"+encodeURIComponent(k)+".json?v="+CF_V).then(r=>r.ok?r.json():{}).catch(()=>({})).then(d=>{CF[k]=d||{};if(CF[k][q.id])render();});}return null;}
 function cfTab(rows,tit){if(!rows||!rows.length)return "";return (tit?'<div class="cf-h">'+esc(tit)+'</div>':'')+'<div class="resumo"><table><thead><tr>'+rows[0].map(h=>'<th>'+esc(h)+'</th>').join("")+'</tr></thead><tbody>'+rows.slice(1).map(r=>'<tr>'+r.map(c=>'<td>'+esc(c)+'</td>').join("")+'</tr>').join("")+'</tbody></table></div>';}
