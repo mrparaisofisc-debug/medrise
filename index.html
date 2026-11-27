@@ -362,7 +362,7 @@ html{scroll-padding-top:76px}
 </div>
 <div class="toast" id="toast"></div>
 <script>(function(){const P={};function pk(n){return n.split('-')[0];}document.addEventListener('error',function(e){const t=e.target;if(!t||t.tagName!=='IMG')return;const src=t.getAttribute('src')||'';const m=src.match(/img\/q\/([^?#]+)$/);if(!m||t.dataset.pk)return;t.dataset.pk='1';const f=m[1],k=pk(f);(P[k]=P[k]||fetch('img/pack/'+k+'.json').then(r=>r.ok?r.json():{}).catch(()=>({})) ).then(d=>{if(d[f]){t.src=d[f];document.querySelectorAll('[data-src="'+src+'"]').forEach(z=>z.dataset.src=d[f]);}});},true);})();</script>
-<!--QD--><script src="qd/q0.js?v=b06981a5f7"></script><script src="qd/q1.js?v=8bba17d450"></script><script src="qd/q2.js?v=25f638ff2e"></script><script src="qd/q3.js?v=de56261147"></script><script src="qd/q4.js?v=856a32ee46"></script><script src="qd/q5.js?v=18ba993b0c"></script><script src="qd/q6.js?v=5ec1142778"></script><!--/QD--><script src="tags.js?v=202611271950"></script><script>
+<!--QD--><script src="qd/q0.js?v=b06981a5f7"></script><script src="qd/q1.js?v=8bba17d450"></script><script src="qd/q2.js?v=25f638ff2e"></script><script src="qd/q3.js?v=de56261147"></script><script src="qd/q4.js?v=856a32ee46"></script><script src="qd/q5.js?v=18ba993b0c"></script><script src="qd/q6.js?v=5ec1142778"></script><!--/QD--><script src="tags.js?v=202611271958"></script><script>
 (function(){
 "use strict";
 /* ================= ICONS ================= */
@@ -1234,7 +1234,7 @@ function vLanding(){
   const go=(id,l,cls)=>'<a class="'+(cls||"")+'" data-act="goto" data-v="'+id+'">'+l+'</a>';
   const nEsp=Object.keys(ESP_MAP).length;
   const buy=(st)=>'<a class="btn" '+(st?'style="'+st+'"':'')+' data-act="goto" data-v="planos">Comprar agora</a>';
-  const lg=x=>'<span class="m-item">'+esc(x[1])+'</span>';
+  const lg=x=>'<span class="lg-card"><img src="'+x[0]+'" alt="'+esc(x[1])+'" loading="lazy"></span>';
   const metodo=[["plan","Seu plano de hoje","Todo dia o site diz o que estudar e quanto. O peso de cada tema na sua banca decide o assunto, e a data da prova decide a fase: cobertura, consolidação ou reta final. Atrasou? O que ficou pra trás é redistribuído nos dias seguintes."],["x","Caderno de erros por conceito","Errou ou chutou? O site mostra os conceitos que a questão cobra. Você marca Já sei ou Faltou, e só o que faltou vira flashcard. Cada conceito volta em 7, 30 e 90 dias, mais cedo perto da prova."],["layers","Questão-irmã na revisão","Na revisão você não decora a mesma questão: vem outra questão oficial que cobra o mesmo conceito, com outro caso. Acertou as 3 revisões, o conceito sai do caderno."],["users","Nada se perde","Saiu no meio do simulado? Volta de onde parou, com respostas, questão e tempo. Plano, revisões e banco de questões ficam salvos na sua conta, no celular e no computador."]];
   const plans=[["Plano Mensal","Flexibilidade mês a mês","R$ 159","/mês","Cartão ou PIX. No cartão, renovação automática mensal.",["Plataforma completa","Cancele quando quiser"],false,""],
     ["Plano Semestral","6 meses de acesso","R$ 699","à vista","ou em até 6x de R$ 116,50 no cartão",["Plataforma completa","6 meses sem renovação","Sai por R$ 116,50 por mês"],true,"Economize R$ 255 em relação ao mensal"]];
