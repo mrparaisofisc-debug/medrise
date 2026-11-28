@@ -1606,7 +1606,7 @@ function render(){
   const [r,p]=route();
   if(r==="nova-senha"){root.innerHTML=vNovaSenha();return;}
   if(ob.ok&&!S.user&&r==="cadastro"){root.innerHTML='<div class="ob"><div style="margin-bottom:26px">'+LOGO_FULL(46)+'</div><div class="card" style="padding:28px;max-width:480px;margin:0 auto;text-align:center"><h1>Confira seu e-mail</h1><p class="sub">Mandamos um link de confirmação pra <b>'+esc(ob.ok)+'</b>. Clique nele pra ativar sua conta. Pode confirmar pelo celular: <b>esta tela entra sozinha</b> assim que você confirmar.</p><p class="sub" style="font-size:13px">Aguardando confirmação…</p><p class="sub" style="font-size:13px">Não chegou? Olhe a caixa de spam ou promoções. O remetente é contato@medrisebr.com.</p></div></div>';return;}
-  if(r==="assinar"){root.innerHTML=vAssinar(p);window.scrollTo(0,0);setTimeout(()=>mountCheckout(p),0);return;}
+  if(r==="assinar"){const ckey=(p||"")+"|"+(ck.m||"cartao");if(ck.key===ckey&&document.getElementById("ck-box"))return;root.innerHTML=vAssinar(p);ck.key=ckey;window.scrollTo(0,0);setTimeout(()=>mountCheckout(p),0);return;}
   if(r==="termos"||r==="privacidade"){root.innerHTML=legalPage(r);window.scrollTo(0,0);return;}if(r==="entrar"&&!S.user){root.innerHTML=vEntrar();return;}
   if(r==="home"||(!S.user&&r!=="cadastro")){root.innerHTML=vLanding();return;}
   if(!S.user){root.innerHTML=vOnboard();return;}
