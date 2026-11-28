@@ -679,21 +679,25 @@ function vAssinar(k){const P=MP_PLANOS[k]||MP_PLANOS.semestral;k=MP_PLANOS[k]?k:
   '<div class="chips" style="margin-top:16px;gap:8px"><button class="chip'+(m==="cartao"?' on':'')+'" data-act="ck-m" data-v="cartao">Cartão</button><button class="chip'+(m==="pix"?' on':'')+'" data-act="ck-m" data-v="pix">PIX</button></div>'+
   '<div id="ck-box" style="margin-top:14px">'+(!MP_PUBLIC_KEY?'<p class="sub">Pagamento indisponível no momento.</p>':m==="pix"?pixForm(k):'<label class="f">'+(sbUser?'E-mail (o mesmo da sua conta)':'Seu melhor e-mail <span style="font-weight:400">(você vai entrar na plataforma com ele)</span>')+'<input type="email" id="ck-email-c" autocomplete="email" value="'+esc((sbUser&&sbUser.email)||"")+'" placeholder="voce@email.com"></label><div id="ck-brick" style="margin-top:12px"><p class="sub">Carregando pagamento…</p></div>')+'</div>'+
   '<p class="sub" style="font-size:12px;margin:14px 0 0;text-align:center"><span style="display:inline-block;width:14px;height:14px;vertical-align:-2px">'+ic("shield")+'</span> Os dados do cartão vão direto pro Mercado Pago, a MedRise não vê nem guarda o número do cartão. Não passou? Devolvemos 100%. Veja os <a href="#termos">Termos de Uso</a>.</p></div></div>';}
-async function mountCheckout(k){if(!MP_PUBLIC_KEY||ck.m==="pix")return;k=MP_PLANOS[k]?k:"semestral";const P=MP_PLANOS[k];
+let CKB=null,CKT=0;async function mountCheckout(k){if(!MP_PUBLIC_KEY||ck.m==="pix")return;k=MP_PLANOS[k]?k:"semestral";const P=MP_PLANOS[k];
   try{if(!window.MercadoPago)await loadJS("https://sdk.mercadopago.com/js/v2");
-    if(ck.brick){try{ck.brick.unmount();}catch(e){}}
+    const tok=++CKT;
+    if(CKB){const ob=CKB;CKB=null;try{await ob.unmount();}catch(e){}}
+    if(tok!==CKT)return;
     const mp=new window.MercadoPago(MP_PUBLIC_KEY,{locale:"pt-BR"});
-    const el=document.getElementById("ck-brick");if(!el)return;el.innerHTML="";
-    ck.brick=await mp.bricks().create("cardPayment","ck-brick",{
+    const el=document.getElementById("ck-brick");if(!el)return;const bid="ck-brick-"+tok;el.innerHTML='<div id="'+bid+'"></div>';
+    let ready=false;setTimeout(()=>{if(!ready&&tok===CKT){const e2=document.getElementById(bid);if(e2&&e2.parentNode)e2.parentNode.insertAdjacentHTML("beforeend",'<p class="sub" style="text-align:center;font-size:14px">Demorando pra carregar? <a href="#" data-act="ck-retry">Tentar de novo</a></p>');}},12000);
+    const br=await mp.bricks().create("cardPayment",bid,{
       initialization:{amount:P.valor,payer:{email:(sbUser&&sbUser.email)||""}},
       customization:{paymentMethods:{maxInstallments:1,types:{included:["credit_card"]}},visual:{style:{theme:"default",customVariables:{baseColor:"#0F766E"}},texts:{formSubmit:"Assinar "+P.nome}}},
-      callbacks:{onReady:()=>{},onError:e=>{console.log("brick",e);},
+      callbacks:{onReady:()=>{ready=true;},onError:e=>{console.log("brick",e);},
         onSubmit:async fd=>{const email=String((($("#ck-email-c")||{}).value)||(fd.payer&&fd.payer.email)||(sbUser&&sbUser.email)||"").trim().toLowerCase();
           if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ckErr("Digite seu e-mail antes de pagar.");const ei=$("#ck-email-c");if(ei)ei.focus();throw new Error("email");}
           const r=await fetch(SB_URL+"/functions/v1/mp-assinar",{method:"POST",headers:{"apikey":SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({plano:k,token:fd.token,email})});
           const j=await r.json().catch(()=>({erro:"Erro de conexão. Tente de novo."}));
           if(!r.ok||j.erro){ckErr(j.erro||"Não foi possível concluir o pagamento.");throw new Error(j.erro||"erro");}
           ckOk(email,j.status);}}});
+    if(tok!==CKT){try{br.unmount();}catch(e){}return;}CKB=br;ck.brick=br;
   }catch(e){const el=document.getElementById("ck-brick");if(el&&!el.children.length)el.innerHTML='<p class="sub" style="color:var(--bad)">Não foi possível carregar o pagamento. Atualize a página e tente de novo.</p>';}}
 function pixForm(k){const P=MP_PLANOS[k];return '<p class="sub" style="margin:0 0 10px">Pagamento único de <b>R$ '+P.valor+'</b>, libera '+(k==="mensal"?"30 dias":"6 meses")+' de acesso. Quando acabar, é só pagar de novo (os dias somam).</p><label class="f">'+(sbUser?'E-mail (o mesmo da sua conta)':'Seu melhor e-mail <span style="font-weight:400">(você vai entrar na plataforma com ele)</span>')+'<input type="email" id="ck-email" autocomplete="email" value="'+esc((sbUser&&sbUser.email)||"")+'" placeholder="voce@email.com"></label><button class="btn" data-act="ck-pix" style="margin-top:12px;width:100%">Gerar PIX de R$ '+P.valor+'</button>';}
 async function pixCriar(){const email=(($("#ck-email")||{}).value||"").trim().toLowerCase();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ckErr("Digite um e-mail válido.");return;}
@@ -1790,6 +1794,7 @@ document.addEventListener("click",e=>{
   if(a==="ics"){icsProva(v);toast("Arquivo da agenda baixado: abra pra salvar a prova "+v);return;}
   if(a==="ck-m"){ck.m=v;render();return;}
   if(a==="ck-pix"){pixCriar();return;}
+  if(a==="ck-retry"){e.preventDefault();mountCheckout(ck.k);return;}
   if(a==="ck-signup"){const em=ck.email||"",nome=(($("#ck-nome")||{}).value||"").trim(),pw=($("#ck-pass")||{}).value||"",er=$("#ck-serr");
     if(nome.length<2){er.textContent="Digite seu nome.";return;}if(pw.length<6){er.textContent="A senha precisa ter pelo menos 6 caracteres.";return;}
     t.disabled=true;t.textContent="Criando sua conta…";er.textContent="";
