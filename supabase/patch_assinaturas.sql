@@ -30,3 +30,13 @@ returns boolean language sql security definer set search_path = public stable as
   );
 $$;
 grant execute on function public.tem_acesso() to authenticated;
+
+-- 28/11/2026: tela de espera do checkout (cartão em análise) consulta se o pagamento já caiu
+create or replace function public.pagamento_ok(p_email text) returns boolean
+language sql security definer set search_path=public stable as $$
+  select exists(select 1 from subscriptions
+    where email=lower(trim(p_email)) and status in ('authorized','pix')
+      and coalesce(updated_at, now()) > now() - interval '3 hours');
+$$;
+revoke all on function public.pagamento_ok(text) from public;
+grant execute on function public.pagamento_ok(text) to anon, authenticated;

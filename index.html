@@ -247,6 +247,7 @@ mark{border-radius:3px;padding:0 1px}
 .marq-t{display:flex;gap:14px;width:max-content;animation:marq 55s linear infinite}
 .marq:hover .marq-t{animation-play-state:paused}
 @keyframes marq{to{transform:translateX(-50%)}}
+.ck-spin{width:46px;height:46px;border:4px solid var(--line);border-top-color:#0F766E;border-radius:50%;margin:0 auto;animation:ckspin .9s linear infinite}@keyframes ckspin{to{transform:rotate(360deg)}}
 .lg-card{flex:none;height:64px;min-width:120px;padding:8px 16px;background:#fff;border-radius:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.18)}.lg-card img{max-height:44px;max-width:150px;width:auto;height:auto;display:block}.marq-t.rev{animation-direction:reverse;animation-duration:60s}
 @media (prefers-reduced-motion:reduce){.marq-t{animation:none;flex-wrap:wrap;width:auto;justify-content:center}}
 .m-item{display:flex;align-items:center;gap:10px;background:#fff;color:var(--ink);border-radius:12px;padding:10px 16px 10px 10px;font-weight:700;font-family:Sora;font-size:15px;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.18)}
@@ -699,18 +700,38 @@ async function pixCriar(){const email=(($("#ck-email")||{}).value||"").trim().to
   const btn=document.querySelector('[data-act="ck-pix"]');if(btn){btn.disabled=true;btn.textContent="Gerando PIX…";}
   try{const r=await fetch(SB_URL+"/functions/v1/mp-pix",{method:"POST",headers:{"apikey":SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({acao:"criar",plano:ck.k,email})});const j=await r.json().catch(()=>({erro:"Erro de conexão."}));
     if(!r.ok||j.erro){ckErr(j.erro||"Não foi possível gerar o PIX.");if(btn){btn.disabled=false;btn.textContent="Tentar de novo";}return;}
-    ck.pix={id:j.id,email};const box=$("#ck-box");
-    box.innerHTML='<div style="text-align:center"><p class="sub" style="margin:0 0 8px">Abra o app do seu banco, escolha <b>PIX → Ler QR code</b> ou <b>Copia e cola</b>.</p><img src="data:image/png;base64,'+j.qr64+'" alt="QR code do PIX" style="width:220px;max-width:100%;border-radius:12px;border:1px solid var(--line)"><textarea id="ck-qr" readonly style="width:100%;margin-top:10px;font-size:12px;min-height:70px">'+esc(j.qr)+'</textarea><button class="btn" data-act="ck-copy" style="margin-top:8px;width:100%">Copiar código PIX</button><p class="sub" id="ck-pst" style="font-size:13px;margin-top:10px">Aguardando pagamento… esta tela atualiza sozinha. O código vale 30 minutos.</p></div>';
-    const t0=Date.now();ck.poll=setInterval(async()=>{if(!ck.pix||Date.now()-t0>31*60e3){clearInterval(ck.poll);const e=$("#ck-pst");if(e)e.textContent="O código expirou. Gere um novo PIX.";return;}
+    ck.pix={id:j.id,email};const box=$("#ck-box");const t0=Date.now();
+    box.innerHTML='<div style="text-align:center"><p class="sub" style="margin:0 0 8px">Abra o app do seu banco, escolha <b>PIX → Ler QR code</b> ou <b>Copia e cola</b>.</p><img src="data:image/png;base64,'+j.qr64+'" alt="QR code do PIX" style="width:220px;max-width:100%;border-radius:12px;border:1px solid var(--line)"><textarea id="ck-qr" readonly style="width:100%;margin-top:10px;font-size:12px;min-height:70px">'+esc(j.qr)+'</textarea><button class="btn" data-act="ck-copy" style="margin-top:8px;width:100%">Copiar código PIX</button><div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:14px"><div class="ck-spin" style="width:22px;height:22px;border-width:3px;margin:0"></div><b id="ck-pst">Aguardando pagamento…</b></div><p class="sub" style="font-size:13px;margin:6px 0 0">Assim que o pagamento cair, você vai direto pro cadastro. O código expira em <b id="ck-clock" style="font-variant-numeric:tabular-nums">30:00</b>.</p></div>';
+    const tc=setInterval(()=>{const c=$("#ck-clock");if(!c||!ck.pix){clearInterval(tc);return;}c.textContent=mmss(30*60e3-(Date.now()-t0));},1000);
+    ck.poll=setInterval(async()=>{if(!ck.pix||Date.now()-t0>31*60e3){clearInterval(ck.poll);const e=$("#ck-pst");if(e)e.textContent="O código expirou. Gere um novo PIX.";ck.pix=null;return;}
       try{const r2=await fetch(SB_URL+"/functions/v1/mp-pix",{method:"POST",headers:{"apikey":SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({acao:"status",id:ck.pix.id})});const j2=await r2.json();
         if(j2.status==="approved"){clearInterval(ck.poll);ckOk(ck.pix.email,"authorized");}}catch(e){}},5000);
   }catch(e){ckErr("Erro de conexão. Tente de novo.");if(btn){btn.disabled=false;btn.textContent="Tentar de novo";}}}
 function ckErr(m){let b=document.getElementById("ck-err");if(!b){b=document.createElement("p");b.id="ck-err";b.style.cssText="color:var(--bad);font-size:14px;margin:10px 0 0";const box=document.getElementById("ck-box");if(box)box.prepend(b);}b.textContent=m;}
-function ckOk(email,st){try{const P=MP_PLANOS[ck.k]||{};fbq("track","Purchase",{value:P.valor||0,currency:"BRL",content_name:P.nome||""})}catch(e){}try{localStorage.setItem("medrise_buy_email",email);}catch(e){}const box=document.getElementById("ck-box");if(!box)return;
-  const pend=st&&st!=="authorized";
-  box.innerHTML='<div style="text-align:center;padding:10px 0"><span class="ic-c xl" style="margin:0 auto">'+ic("check")+'</span><h2 style="margin-top:12px">'+(pend?"Pagamento em análise":"Pagamento aprovado!")+'</h2><p class="sub">'+(pend?"O Mercado Pago está confirmando o pagamento. Assim que aprovar, seu acesso é liberado.":"Seu plano está ativo.")+' Use o e-mail <b>'+esc(email)+'</b> pra '+(sbUser?"entrar":"criar sua conta")+'.</p>'+
-  (sbUser?'<a class="btn" href="#inicio" data-act="acc-recheck" style="margin-top:12px">Ir pra plataforma</a>':'<a class="btn" href="#cadastro" style="margin-top:12px">Criar minha conta</a><p class="sub" style="font-size:13px;margin-top:10px">Já tem conta? <a href="#entrar">Entrar</a></p>')+'</div>';
-  if(sbUser)checkAcc();}
+function ckHideOpts(){document.querySelectorAll("#root .card .chip").forEach(x=>x.style.display="none");}
+function ckOk(email,st){if(ck.wait){clearInterval(ck.wait);ck.wait=null;}ckHideOpts();ck.email=email;const box=document.getElementById("ck-box");
+  try{localStorage.setItem("medrise_buy_email",email);}catch(e){}
+  if(st&&st!=="authorized"){ckWait(email);return;}
+  if(!ck.bought){ck.bought=1;try{const P=MP_PLANOS[ck.k]||{};fbq("track","Purchase",{value:P.valor||0,currency:"BRL",content_name:P.nome||""})}catch(e){}}
+  if(!box)return;
+  const head='<div style="text-align:center;padding:6px 0 0"><span class="ic-c xl" style="margin:0 auto">'+ic("check")+'</span><h2 style="margin-top:12px">Pagamento aprovado!</h2>';
+  if(sbUser){box.innerHTML=head+'<p class="sub">Seu plano está ativo. Entrando na plataforma…</p></div>';acc.ok=true;checkAcc();setTimeout(()=>{location.hash=S.user?"#inicio":"#cadastro";},1500);return;}
+  box.innerHTML=head+'<p class="sub" style="margin-bottom:0">Agora crie sua conta pra entrar na plataforma.</p></div>'+
+  '<div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line)"><label class="f">Seu nome<input type="text" id="ck-nome" autocomplete="name" placeholder="Como quer ser chamado(a)"></label>'+
+  '<label class="f" style="margin-top:10px">E-mail (o mesmo do pagamento)<input type="email" value="'+esc(email)+'" readonly style="background:var(--soft,#f3f4f6);color:var(--mut,#6b7280)"></label>'+
+  '<label class="f" style="margin-top:10px">Crie uma senha (mín. 6 caracteres)<input type="password" id="ck-pass" autocomplete="new-password" placeholder="Sua senha"></label>'+
+  '<p id="ck-serr" style="color:var(--bad);font-size:14px;margin:8px 0 0"></p>'+
+  '<button class="btn" data-act="ck-signup" style="width:100%;margin-top:12px">Criar minha conta</button>'+
+  '<p class="sub" style="font-size:13px;margin:10px 0 0;text-align:center">Já tem conta com esse e-mail? <a href="#entrar">Entrar</a></p>'+
+  '<p class="sub" style="font-size:12px;margin:6px 0 0;text-align:center">Ao criar a conta você concorda com os <a href="#termos">Termos de Uso</a> e a <a href="#privacidade">Política de Privacidade</a>.</p></div>';
+  setTimeout(()=>{const n=$("#ck-nome");if(n)n.focus();},50);}
+function mmss(ms){ms=Math.max(0,Math.round(ms/1000));return String(Math.floor(ms/60)).padStart(2,"0")+":"+String(ms%60).padStart(2,"0");}
+function ckWait(email){const box=document.getElementById("ck-box");if(!box)return;ckHideOpts();const t0=Date.now();
+  box.innerHTML='<div style="text-align:center;padding:14px 0"><div class="ck-spin"></div><h2 style="margin-top:14px">Confirmando seu pagamento…</h2><p class="sub">O Mercado Pago está analisando. Não feche esta tela: assim que confirmar, você vai direto pro cadastro.</p><p style="font-size:28px;font-weight:700;margin:10px 0 0;font-variant-numeric:tabular-nums" id="ck-clock">00:00</p><p class="sub" style="font-size:12px;margin:4px 0 0">Costuma levar menos de 1 minuto.</p></div>';
+  let busy=false;ck.wait=setInterval(async()=>{const c=$("#ck-clock");if(!c){clearInterval(ck.wait);ck.wait=null;return;}c.textContent=mmss(Date.now()-t0);
+    if(Date.now()-t0>20*60e3){clearInterval(ck.wait);ck.wait=null;box.innerHTML='<div style="text-align:center;padding:10px 0"><h2>Ainda em análise</h2><p class="sub">O Mercado Pago está demorando pra confirmar. Quando aprovar, o acesso é liberado no e-mail <b>'+esc(email)+'</b>. Você pode <a href="#cadastro">criar sua conta</a> agora com esse e-mail.</p></div>';return;}
+    if(busy||(Date.now()-t0)%5000>1000)return;busy=true;
+    try{const {data}=await sb.rpc("pagamento_ok",{p_email:email});if(data===true){ckOk(email,"authorized");return;}}catch(e){}busy=false;},1000);}
 async function finishPending(){if(!sbUser||S.user)return;try{const p=JSON.parse(localStorage.getItem("medrise_ob")||"null");if(p){S.user=p;save();await pushState();localStorage.removeItem("medrise_ob");}}catch(e){}}
 let pend=null;
 function startConfirmWatch(em,pw){pend={em,pw,t0:Date.now(),busy:false};const tick=async()=>{if(!pend||pend.busy)return;if(Date.now()-pend.t0>30*60e3){clearInterval(pend.iv);pend=null;return;}pend.busy=true;
@@ -1624,7 +1645,7 @@ function render(){
   const root=$("#root");hideBar();
   const [r,p]=route();
   if(r==="nova-senha"){root.innerHTML=vNovaSenha();return;}
-  if(ob.ok&&!S.user&&r==="cadastro"){root.innerHTML='<div class="ob"><div style="margin-bottom:26px">'+LOGO_FULL(46)+'</div><div class="card" style="padding:28px;max-width:480px;margin:0 auto;text-align:center"><h1>Confira seu e-mail</h1><p class="sub">Mandamos um link de confirmação pra <b>'+esc(ob.ok)+'</b>. Clique nele pra ativar sua conta. Pode confirmar pelo celular: <b>esta tela entra sozinha</b> assim que você confirmar.</p><p class="sub" style="font-size:13px">Aguardando confirmação…</p><p class="sub" style="font-size:13px">Não chegou? Olhe a caixa de spam ou promoções. O remetente é contato@medrisebr.com.</p></div></div>';return;}
+  if(ob.ok&&!S.user&&r==="cadastro"){root.innerHTML='<div class="ob"><div style="margin-bottom:26px">'+LOGO_FULL(46)+'</div><div class="card" style="padding:28px;max-width:480px;margin:0 auto;text-align:center"><h1>Confira seu e-mail</h1><p class="sub">Falta só um passo! Mandamos um link de confirmação pra <b>'+esc(ob.ok)+'</b>. Clique nele pra ativar sua conta. Pode confirmar pelo celular: <b>esta tela entra sozinha</b> assim que você confirmar.</p><p class="sub" style="font-size:13px">Aguardando confirmação…</p><p class="sub" style="font-size:13px">Não chegou? Olhe a caixa de spam ou promoções. O remetente é contato@medrisebr.com.</p></div></div>';return;}
   if(r==="assinar"){const ckey=(p||"")+"|"+(ck.m||"cartao");if(ck.key===ckey&&document.getElementById("ck-box"))return;root.innerHTML=vAssinar(p);ck.key=ckey;window.scrollTo(0,0);setTimeout(()=>mountCheckout(p),0);return;}
   if(r==="termos"||r==="privacidade"){root.innerHTML=legalPage(r);window.scrollTo(0,0);return;}if(r==="entrar"&&!S.user){root.innerHTML=vEntrar();return;}
   if(r==="home"||(!S.user&&r!=="cadastro")){root.innerHTML=vLanding();return;}
@@ -1762,6 +1783,13 @@ document.addEventListener("click",e=>{
   if(a==="ics"){icsProva(v);toast("Arquivo da agenda baixado: abra pra salvar a prova "+v);return;}
   if(a==="ck-m"){ck.m=v;render();return;}
   if(a==="ck-pix"){pixCriar();return;}
+  if(a==="ck-signup"){const em=ck.email||"",nome=(($("#ck-nome")||{}).value||"").trim(),pw=($("#ck-pass")||{}).value||"",er=$("#ck-serr");
+    if(nome.length<2){er.textContent="Digite seu nome.";return;}if(pw.length<6){er.textContent="A senha precisa ter pelo menos 6 caracteres.";return;}
+    t.disabled=true;t.textContent="Criando sua conta…";er.textContent="";
+    sb.auth.signUp({email:em,password:pw,options:{data:{nome}}}).then(({data,error})=>{
+      if(error){t.disabled=false;t.textContent="Criar minha conta";er.innerHTML=/registered|already/i.test(error.message)?'Esse e-mail já tem conta. <a href="#entrar">Clique aqui pra entrar</a>.':esc("Não foi possível criar a conta: "+error.message);return;}
+      try{fbq("track","CompleteRegistration")}catch(e){}sbUser=data.user;ob.nome=nome;ob.step=0;ob.err="";
+      if(!data.session){ob.ok=em;startConfirmWatch(em,pw);}location.hash="#cadastro";render();});return;}
   if(a==="ck-copy"){const ta=$("#ck-qr");if(ta){ta.select();try{navigator.clipboard.writeText(ta.value);}catch(e){document.execCommand("copy");}toast("Código PIX copiado");}return;}
   if(a==="acc-recheck"){checkAcc();if(t.tagName!=="A"||!t.getAttribute("href"))return;}
   if(a==="goto"){const lm=$("#lp-menu");if(lm)lm.classList.remove("open");const el=document.getElementById(v);if(el)el.scrollIntoView({behavior:"smooth"});return;}
