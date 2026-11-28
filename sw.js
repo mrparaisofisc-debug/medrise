@@ -1,5 +1,5 @@
-const C='medrise-v30';
-const CORE=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./landing.js'];
+const C='medrise-v31';
+const CORE=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(CORE).catch(()=>{})));self.skipWaiting();});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
 self.addEventListener('message',e=>{if(e.data&&e.data.type==='offline-all'){e.waitUntil(caches.open(C).then(async c=>{let n=0;for(const u of e.data.urls){try{if(!(await c.match(u))){const r=await fetch(u);if(r.ok)await c.put(u,r);}}catch(x){}n++;}const cl=await self.clients.matchAll();cl.forEach(x=>x.postMessage({type:'offline-done',n}));}));}});
