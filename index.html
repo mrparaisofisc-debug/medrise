@@ -665,7 +665,7 @@ async function loadRanking(){if(!sb||!sbUser||rk.loading)return;rk.loading=true;
 let auth={modo:"entrar",msg:"",busy:false,recovery:false};
 /* ===== Checkout Mercado Pago dentro do site (assinatura no cartão) ===== */
 const MP_PUBLIC_KEY="APP_USR-bd6c3711-d0e6-4800-9e2b-11d0b7d3b8a2";            /* Public Key de produção da aplicação "MedRise Assinaturas" */
-const PAYWALL=false;               /* true = só quem tem assinatura ativa (ou cortesia) usa a área do aluno */
+const PAYWALL=true;               /* true = só quem tem assinatura ativa (ou cortesia) usa a área do aluno */
 const MP_PLANOS={mensal:{nome:"Plano Mensal",valor:159,txt:"R$ 159 por mês"},
   semestral:{nome:"Plano Semestral",valor:699,txt:"R$ 699 a cada 6 meses (sai por R$ 116,50/mês)"}};
 let acc={ok:null},ck={st:"",err:"",brick:null};
