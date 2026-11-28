@@ -658,7 +658,7 @@ function vAssinar(k){const P=MP_PLANOS[k]||MP_PLANOS.semestral;k=MP_PLANOS[k]?k:
   '<div class="row" style="justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap"><div><span class="tag">Pagamento seguro</span><h1 style="margin-top:8px">'+P.nome+'</h1><p class="sub" style="margin:4px 0 0">'+(m==="pix"?"R$ "+P.valor+" no PIX, "+(k==="mensal"?"30 dias":"6 meses")+" de acesso, sem renovação.":P.txt)+'</p></div>'+
   '<div class="row" style="gap:6px">'+Object.keys(MP_PLANOS).map(x=>'<a class="chip'+(x===k?' on':'')+'" style="text-decoration:none" href="#assinar/'+x+'">'+(x==="mensal"?"Mensal":"Semestral")+'</a>').join("")+'</div></div>'+
   '<div class="chips" style="margin-top:16px;gap:8px"><button class="chip'+(m==="cartao"?' on':'')+'" data-act="ck-m" data-v="cartao">Cartão · renova sozinho</button><button class="chip'+(m==="pix"?' on':'')+'" data-act="ck-m" data-v="pix">PIX · sem renovação</button></div>'+
-  '<div id="ck-box" style="margin-top:14px">'+(!MP_PUBLIC_KEY?'<p class="sub">Pagamento indisponível no momento.</p>':m==="pix"?pixForm(k):'<div id="ck-brick"><p class="sub">Carregando pagamento…</p></div>')+'</div>'+
+  '<div id="ck-box" style="margin-top:14px">'+(!MP_PUBLIC_KEY?'<p class="sub">Pagamento indisponível no momento.</p>':m==="pix"?pixForm(k):'<label class="f">E-mail (use o mesmo da sua conta)<input type="email" id="ck-email-c" autocomplete="email" value="'+esc((sbUser&&sbUser.email)||"")+'" placeholder="voce@email.com"></label><div id="ck-brick" style="margin-top:12px"><p class="sub">Carregando pagamento…</p></div>')+'</div>'+
   '<p class="sub" style="font-size:12px;margin:14px 0 0;text-align:center"><span style="display:inline-block;width:14px;height:14px;vertical-align:-2px">'+ic("shield")+'</span> Os dados do cartão vão direto pro Mercado Pago, a MedRise não vê nem guarda o número do cartão. Não passou? Devolvemos 100%. Veja os <a href="#termos">Termos de Uso</a>.</p></div></div>';}
 async function mountCheckout(k){if(!MP_PUBLIC_KEY||ck.m==="pix")return;k=MP_PLANOS[k]?k:"semestral";const P=MP_PLANOS[k];
   try{if(!window.MercadoPago)await loadJS("https://sdk.mercadopago.com/js/v2");
@@ -667,9 +667,10 @@ async function mountCheckout(k){if(!MP_PUBLIC_KEY||ck.m==="pix")return;k=MP_PLAN
     const el=document.getElementById("ck-brick");if(!el)return;el.innerHTML="";
     ck.brick=await mp.bricks().create("cardPayment","ck-brick",{
       initialization:{amount:P.valor,payer:{email:(sbUser&&sbUser.email)||""}},
-      customization:{paymentMethods:{maxInstallments:1,types:{excluded:["debit_card","prepaid_card"]}},visual:{style:{theme:"default",customVariables:{baseColor:"#0F766E"}},texts:{formSubmit:"Assinar "+P.nome}}},
+      customization:{paymentMethods:{maxInstallments:1,types:{included:["credit_card"]}},visual:{style:{theme:"default",customVariables:{baseColor:"#0F766E"}},texts:{formSubmit:"Assinar "+P.nome}}},
       callbacks:{onReady:()=>{},onError:e=>{console.log("brick",e);},
-        onSubmit:async fd=>{const email=String((fd.payer&&fd.payer.email)||(sbUser&&sbUser.email)||"").trim().toLowerCase();
+        onSubmit:async fd=>{const email=String((($("#ck-email-c")||{}).value)||(fd.payer&&fd.payer.email)||(sbUser&&sbUser.email)||"").trim().toLowerCase();
+          if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ckErr("Digite seu e-mail antes de pagar.");const ei=$("#ck-email-c");if(ei)ei.focus();throw new Error("email");}
           const r=await fetch(SB_URL+"/functions/v1/mp-assinar",{method:"POST",headers:{"apikey":SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({plano:k,token:fd.token,email})});
           const j=await r.json().catch(()=>({erro:"Erro de conexão. Tente de novo."}));
           if(!r.ok||j.erro){ckErr(j.erro||"Não foi possível concluir o pagamento.");throw new Error(j.erro||"erro");}
